@@ -1,0 +1,48 @@
+export type JournalPaperType = {
+  userId?: number | string;
+  id?: number;
+  type?: string;
+  title?: string;
+  abstract?: string;
+  paperUrl?: string;
+  keywords?: string;
+  primaryDomain?: string;
+  secondaryDomain?: string;
+  country?: string;
+  authorNames?: string;
+  authorEmail?: string;
+  howToKnow?: string;
+  editorName?: string;
+  reviewerName?: string;
+  associateEditor?: String;
+  updatedAt?: string;
+  status?: string;
+  paperID?: number;
+  createdAt?: string;
+  isSubmitted?: boolean;
+  isAssignedtoEditor?: boolean;
+  isAssociatedEditorAssigned?: boolean;
+  isReviewerAssigned?: boolean;
+  isAssigndToEditor?: boolean;
+  txtUrl?: string;
+  rejectedPerson?: string;
+  rejectedReasons?: string;
+  // reviewers?: EditorDataType;
+};
+
+export type EditorDataType = {
+  id?: string;
+  name: string;
+  Status: string;
+  areaOfExpertise: string;
+  createdAt: Date;
+  email: string;
+  emailVerified: Date;
+  role: string;
+  image: string;
+  password: string;
+  university: string;
+  qualification: string;
+  hashedPassword: string;
+  updatedAt: string;
+};

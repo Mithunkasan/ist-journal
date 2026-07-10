@@ -1,0 +1,280 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── CSS Custom Properties ─────────────────────────────────────────────────── */
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+  --color-primary: #004b23;
+  --color-primary-light: #38b000;
+  --color-accent: #70e000;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
+/* ── Base ──────────────────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  /* Smooth scroll — but only if the user hasn't opted for reduced motion */
+  scroll-behavior: smooth;
+}
+
+body {
+  overflow-x: hidden;
+  /* Improve text rendering for Lighthouse readability */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* ── Accessibility: Focus Visible ──────────────────────────────────────────── */
+/*
+ * Lighthouse Accessibility: ensure all focusable elements have a visible
+ * focus indicator. We use :focus-visible to avoid showing outlines on
+ * mouse clicks while still showing them for keyboard navigation.
+ */
+:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+/* Remove default outline only when :focus-visible is supported */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ── Accessibility: Reduced Motion ─────────────────────────────────────────── */
+/*
+ * Respect users who prefer reduced motion (Lighthouse Best Practices).
+ * Disables smooth scrolling and CSS animations for those users.
+ */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── Skip to Content (Accessibility) ───────────────────────────────────────── */
+/*
+ * Hidden "skip to main content" link for keyboard/screen-reader users.
+ * Becomes visible on focus — required for WCAG 2.4.1 compliance.
+ */
+.skip-to-content {
+  position: absolute;
+  top: -999px;
+  left: 0;
+  z-index: 9999;
+  padding: 8px 16px;
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 700;
+  border-radius: 0 0 4px 0;
+  transition: top 0.2s;
+}
+
+.skip-to-content:focus {
+  top: 0;
+}
+
+/* ── Form Controls ─────────────────────────────────────────────────────────── */
+@layer base {
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* Ensure images never overflow their containers */
+  img,
+  video {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Better default link styles for SEO */
+  a {
+    color: inherit;
+  }
+}
+
+/* ── Scrollbar (minimal, accessible) ───────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c5c5c5;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #004b23;
+}
+
+/* ── Print styles ───────────────────────────────────────────────────────────── */
+@media print {
+  nav,
+  footer,
+  aside,
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    color: #000;
+    background: #fff;
+  }
+
+  a[href]::after {
+    content: " (" attr(href) ")";
+  }
+}
+
+/* ── Book Loader Animations ────────────────────────────────────────────────── */
+
+/* Sweeping progress bar inside the book SVG clipPath */
+.book-fill-rect {
+  animation: bookFillSweep 2.5s infinite ease-in-out;
+}
+
+@keyframes bookFillSweep {
+  0% {
+    x: 0;
+    width: 0;
+  }
+  45% {
+    x: 0;
+    width: 120px;
+  }
+  55% {
+    x: 0;
+    width: 120px;
+  }
+  90% {
+    x: 120px;
+    width: 0;
+  }
+  100% {
+    x: 0;
+    width: 0;
+  }
+}
+
+/* Page turning animation */
+.turning-page {
+  transform-origin: 60px 40px; /* Origin is at the spine center */
+  backface-visibility: hidden;
+}
+
+.turning-page.page-1 {
+  animation: turnPageAnim 2.5s infinite ease-in-out;
+  animation-delay: 0.1s;
+}
+
+.turning-page.page-2 {
+  animation: turnPageAnim 2.5s infinite ease-in-out;
+  animation-delay: 0.6s;
+}
+
+.turning-page.page-3 {
+  animation: turnPageAnim 2.5s infinite ease-in-out;
+  animation-delay: 1.1s;
+}
+
+@keyframes turnPageAnim {
+  0% {
+    transform: scaleX(1);
+    opacity: 0;
+  }
+  5% {
+    opacity: 1;
+  }
+  40% {
+    transform: scaleX(-1);
+    opacity: 1;
+  }
+  45% {
+    transform: scaleX(-1);
+    opacity: 0;
+  }
+  100% {
+    transform: scaleX(1);
+    opacity: 0;
+  }
+}
+
+/* Glowing effect for the active progress fill path cover */
+.glow-path {
+  filter: drop-shadow(0 0 2px var(--color-primary-light));
+}
+
+/* Shimmering loading text underneath the book loader */
+.loading-text {
+  background: linear-gradient(
+    90deg,
+    #38b000 0%,
+    #70e000 25%,
+    #ffffff 50%,
+    #70e000 75%,
+    #38b000 100%
+  );
+  background-size: 200% auto;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: textShimmer 1.8s linear infinite;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes textShimmer {
+  to {
+    background-position: 200% center;
+  }
+}
+
+/* Fade in for the backdrop container */
+.fade-in-backdrop {
+  animation: backdropFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes backdropFadeIn {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(8px);
+  }
+}
+

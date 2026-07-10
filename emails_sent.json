@@ -1,0 +1,280 @@
+[
+  {
+    "id": 1783690354666,
+    "timestamp": "2026-07-10T13:32:29.254Z",
+    "to": "mattadarsh@gmail.com",
+    "subject": "[IST Journal] Peer Review Invitation (ID: 942628634)",
+    "body": "Dear Dr. Adarsh,\n\nYou have been invited to review the manuscript titled \"Science\" (ID: 942628634) under SINGLE_BLIND guidelines.\n\nPlease log in to your portal within 3 days to ACCEPT or DECLINE this invitation. If accepted, your review will be due by 17/7/2026.\n\nBest regards,\nEditorial Office",
+    "templateParams": {
+      "paperID": 942628634
+    }
+  },
+  {
+    "id": 1783689730836,
+    "timestamp": "2026-07-10T13:22:05.963Z",
+    "to": "kavin@gmail.com",
+    "subject": "[IST Journal] Manuscript Submitted Successfully",
+    "body": "Dear Kavin,\n\nYour manuscript titled \"Science\" has been successfully submitted and is awaiting editorial initial screening.\n\nPaper ID: 942628634\nSubmission Date: 10/07/2026\n\nBest regards,\nEditorial Board",
+    "templateParams": {
+      "paperID": "942628634"
+    }
+  },
+  {
+    "id": 1783689730423,
+    "timestamp": "2026-07-10T13:22:05.718Z",
+    "to": "mohamedfarhan8821@gmail.com",
+    "subject": "[IST Journal] New Manuscript Assigned for Review",
+    "body": "Dear Farhan,\n\nA new manuscript titled \"Science\" has been submitted and assigned to you for editorial review.\n\nPaper ID: 942628634\nAuthor(s): Kavin\n\nPlease log in to your Editor Dashboard to review the submission and assign reviewers.\n\nBest regards,\nEditorial Office",
+    "templateParams": {
+      "paperID": 942628634
+    }
+  },
+  {
+    "id": 1783689730030,
+    "timestamp": "2026-07-10T13:22:05.216Z",
+    "to": "mithunkasanmatt@gmail.com",
+    "subject": "[IST Journal] Manuscript Submitted Successfully",
+    "body": "Dear Mithun,\n\nYour manuscript titled \"Science\" has been successfully submitted and is awaiting editorial initial screening.\n\nPaper ID: 942628634\n\nBest regards,\nEditorial Board",
+    "templateParams": {
+      "paperID": 942628634
+    }
+  },
+  {
+    "id": 1783684599379,
+    "timestamp": "2026-07-10T11:56:39.376Z",
+    "to": "editor@gmail.com",
+    "subject": "[IST Journal] All Review Reports Received",
+    "body": "Dear EIC Editor,\n\nWe have received all peer review reports for manuscript ID 966682436 (\"presentation\").\n\nThe manuscript has been moved to \"Awaiting Final Editor Decision\" stage. Please log in to your EIC Dashboard to analyze the reviews and make your decision.\n\nBest regards,\nEditorial Office",
+    "templateParams": {
+      "paperID": 966682436
+    }
+  },
+  {
+    "id": 1783682189661,
+    "timestamp": "2026-07-10T11:16:29.655Z",
+    "to": "editor@gmail.com",
+    "subject": "[IST Journal] All Review Reports Received",
+    "body": "Dear EIC Editor,\n\nWe have received all peer review reports for manuscript ID 966682436 (\"presentation\").\n\nThe manuscript has been moved to \"Awaiting Final Editor Decision\" stage. Please log in to your EIC Dashboard to analyze the reviews and make your decision.\n\nBest regards,\nEditorial Office",
+    "templateParams": {
+      "paperID": 966682436
+    }
+  },
+  {
+    "id": 1783681524326,
+    "timestamp": "2026-07-10T11:05:24.322Z",
+    "to": "reviewer@gmail.com",
+    "subject": "[IST Journal] Peer Review Invitation (ID: 966682436)",
+    "body": "Dear Dr. Reviewer,\n\nYou have been invited to review the manuscript titled \"presentation\" (ID: 966682436) under SINGLE_BLIND guidelines.\n\nPlease log in to your portal within 3 days to ACCEPT or DECLINE this invitation. If accepted, your review will be due by 31/7/2026.\n\nBest regards,\nEditorial Office",
+    "templateParams": {
+      "paperID": 966682436
+    }
+  },
+  {
+    "id": 1783677025011,
+    "timestamp": "2026-07-10T09:50:25.010Z",
+    "to": "author@gmail.com",
+    "subject": "[IST Journal] Manuscript Submitted Successfully",
+    "body": "Dear Author,\n\nYour manuscript titled \"presentation\" has been successfully submitted and is awaiting editorial initial screening.\n\nPaper ID: 966682436\n\nBest regards,\nEditorial Board",
+    "templateParams": {
+      "paperID": 966682436
+    }
+  },
+  {
+    "id": 1783676906008,
+    "timestamp": "2026-07-10T09:48:26.004Z",
+    "to": "author@gmail.com",
+    "subject": "[IST Journal] Manuscript Submitted Successfully",
+    "body": "Dear Author,\n\nYour manuscript titled \"Social\" has been successfully submitted and is awaiting editorial initial screening.\n\nPaper ID: 156200553\n\nBest regards,\nEditorial Board",
+    "templateParams": {
+      "paperID": 156200553
+    }
+  },
+  {
+    "id": 1783668558777,
+    "timestamp": "2026-07-10T07:29:18.773Z",
+    "to": "author@gmail.com",
+    "subject": "[IST Journal] Manuscript Submitted Successfully",
+    "body": "Dear Author,\n\nYour manuscript titled \"Cloud Computing\" has been successfully submitted and is awaiting editorial initial screening.\n\nPaper ID: 377365877\n\nBest regards,\nEditorial Board",
+    "templateParams": {
+      "paperID": 377365877
+    }
+  },
+  {
+    "id": 1783665252208,
+    "timestamp": "2026-07-10T06:34:12.087Z",
+    "to": "mithunkasan@gmail.com",
+    "subject": "[IST Journal] Manuscript Submitted Successfully",
+    "body": "Dear Mithun,\n\nYour manuscript titled \"Quantum Physics\" has been successfully submitted and is awaiting editorial initial screening.\n\nPaper ID: 559442368\n\nBest regards,\nEditorial Board",
+    "templateParams": {
+      "paperID": 559442368
+    }
+  },
+  {
+    "id": 1783428202151,
+    "timestamp": "2026-07-07T12:43:22.148Z",
+    "to": "author@gmail.com, aathil@gmail.com",
+    "subject": "[IST Journal] Editorial Decision: Accepted for Publication!",
+    "body": "Dear Aathil,\n\nWe are absolutely delighted to inform you that your manuscript titled \"Quantum Computing\" (ID: 613977) has been ACCEPTED for publication in the International Scientific and Technological Journal.\n\nComments:\ngood\n\nYour paper has now entered our Production stage (Copy editing, Grammar correction, DOI generation). Our production editors will contact you if any proof checking is required.\n\nThank you for choosing to publish with us.\n\nBest regards,\nEditor-in-Chief",
+    "templateParams": {
+      "paperID": 613977
+    }
+  },
+  {
+    "id": 1783427856679,
+    "timestamp": "2026-07-07T12:37:36.678Z",
+    "to": "associate@gmail.com",
+    "subject": "[IST Journal] Invitation Accepted by Reviewer for Paper ID 613977",
+    "body": "Dear Dr. Associate,\n\nWe are pleased to inform you that Dr. Reviewer has ACCEPTED your peer review invitation for manuscript ID 613977 (\"Quantum Computing\").\n\nThe review timeline has commenced, and the report is scheduled to be completed by 8/7/2026.\n\nBest regards,\nJournal Peer Review system",
+    "templateParams": {
+      "paperID": 613977,
+      "reviewerName": "Reviewer"
+    }
+  },
+  {
+    "id": 1783427797032,
+    "timestamp": "2026-07-07T12:36:37.030Z",
+    "to": "reviewer2@gmail.com",
+    "subject": "[IST Journal] Peer Review Invitation (ID: 613977)",
+    "body": "Dear Dr. Reviewer2,\n\nYou have been invited to review the manuscript titled \"Quantum Computing\" (ID: 613977) under SINGLE_BLIND guidelines.\n\nPlease log in to your portal within 3 days to ACCEPT or DECLINE this invitation. If accepted, your review will be due by 8/7/2026.\n\nBest regards,\nEditorial Office",
+    "templateParams": {
+      "paperID": 613977,
+      "reviewerName": "Reviewer2",
+      "deadline": "2026-07-08T00:00:00.000Z"
+    }
+  },
+  {
+    "id": 1783427795113,
+    "timestamp": "2026-07-07T12:36:35.110Z",
+    "to": "revier2@gmail.com",
+    "subject": "[IST Journal] Peer Review Invitation (ID: 613977)",
+    "body": "Dear Dr. Riviewer2,\n\nYou have been invited to review the manuscript titled \"Quantum Computing\" (ID: 613977) under SINGLE_BLIND guidelines.\n\nPlease log in to your portal within 3 days to ACCEPT or DECLINE this invitation. If accepted, your review will be due by 8/7/2026.\n\nBest regards,\nEditorial Office",
+    "templateParams": {
+      "paperID": 613977,
+      "reviewerName": "Riviewer2",
+      "deadline": "2026-07-08T00:00:00.000Z"
+    }
+  },
+  {
+    "id": 1783427792789,
+    "timestamp": "2026-07-07T12:36:32.784Z",
+    "to": "reviewer@gmail.com",
+    "subject": "[IST Journal] Peer Review Invitation (ID: 613977)",
+    "body": "Dear Dr. Reviewer,\n\nYou have been invited to review the manuscript titled \"Quantum Computing\" (ID: 613977) under SINGLE_BLIND guidelines.\n\nPlease log in to your portal within 3 days to ACCEPT or DECLINE this invitation. If accepted, your review will be due by 8/7/2026.\n\nBest regards,\nEditorial Office",
+    "templateParams": {
+      "paperID": 613977,
+      "reviewerName": "Reviewer",
+      "deadline": "2026-07-08T00:00:00.000Z"
+    }
+  },
+  {
+    "id": 1783407461658,
+    "timestamp": "2026-07-07T06:57:41.652Z",
+    "to": "author@gmail.com, aathil@gmail.com",
+    "subject": "[IST Journal] Manuscript Forwarded to Review",
+    "body": "Dear Aathil,\n\nWe are pleased to inform you that your manuscript titled \"Quantum Computing\" has successfully passed the initial editorial screening checks and has been forwarded to the peer review stage.\n\nYour paper status is now: Awaiting Reviewer Assignment.\n\nBest regards,\nEditorial Office",
+    "templateParams": {
+      "paperID": 613977
+    }
+  },
+  {
+    "id": 1783407265005,
+    "timestamp": "2026-07-07T06:54:25.003Z",
+    "to": "associate@gmail.com",
+    "subject": "[IST Journal] New Manuscript Assigned for Track Management",
+    "body": "Dear Associate,\n\nWe have assigned a new manuscript to your track for evaluation and reviewer selection.\n\nPaper Details:\n- ID: 613977\n- Title: \"Quantum Computing\"\n- Category: AI / Computer Science\n\nPlease log in to your Associate Editor Dashboard to perform the screening check and invite peer reviewers.\n\nBest regards,\nEditor-in-Chief",
+    "templateParams": {
+      "paperID": 613977,
+      "role": "ASSOCIATE_EDITOR",
+      "name": "Associate"
+    }
+  },
+  {
+    "id": 1783405386323,
+    "timestamp": "2026-07-07T06:23:06.318Z",
+    "to": "author@gmail.com",
+    "subject": "[IST Journal] Manuscript Submitted Successfully",
+    "body": "Dear Author,\n\nYour manuscript titled \"Quantum Computing\" has been successfully submitted and is awaiting editorial initial screening.\n\nPaper ID: 613977\n\nBest regards,\nEditorial Board",
+    "templateParams": {
+      "paperID": 613977
+    }
+  },
+  {
+    "id": 1782726676352,
+    "timestamp": "2026-06-29T09:51:16.347Z",
+    "to": "mithun@gmail.com",
+    "subject": "[IST Journal] Manuscript Submitted Successfully",
+    "body": "Dear Mithun,\n\nYour manuscript titled \"Quantum Computing\" has been successfully submitted and is awaiting editorial initial screening.\n\nPaper ID: 812566\n\nBest regards,\nEditorial Board",
+    "templateParams": {
+      "paperID": 812566
+    }
+  },
+  {
+    "id": 1781260480923,
+    "timestamp": "2026-06-12T10:34:40.921Z",
+    "to": "jawid@gmail.com",
+    "subject": "[IST Journal] Invitation Accepted by Reviewer for Paper ID 161250",
+    "body": "Dear Dr. Jawid,\n\nWe are pleased to inform you that Dr. Anzil has ACCEPTED your peer review invitation for manuscript ID 161250 (\"Ai Technology\").\n\nThe review timeline has commenced, and the report is scheduled to be completed by 15/6/2026.\n\nBest regards,\nJournal Peer Review system",
+    "templateParams": {
+      "paperID": 161250,
+      "reviewerName": "Anzil"
+    }
+  },
+  {
+    "id": 1781260471554,
+    "timestamp": "2026-06-12T10:34:31.552Z",
+    "to": "jawid@gmail.com",
+    "subject": "[IST Journal] Invitation Accepted by Reviewer for Paper ID 161250",
+    "body": "Dear Dr. Jawid,\n\nWe are pleased to inform you that Dr. Anzil has ACCEPTED your peer review invitation for manuscript ID 161250 (\"Ai Technology\").\n\nThe review timeline has commenced, and the report is scheduled to be completed by 15/6/2026.\n\nBest regards,\nJournal Peer Review system",
+    "templateParams": {
+      "paperID": 161250,
+      "reviewerName": "Anzil"
+    }
+  },
+  {
+    "id": 1781260404162,
+    "timestamp": "2026-06-12T10:33:24.151Z",
+    "to": "priya@gmail.com",
+    "subject": "[IST Journal] Peer Review Invitation for Manuscript ID 161250",
+    "body": "Dear Dr. Priya,\n\nYou have been invited by Associate Editor Jawid to review the following manuscript submitted to the International Scientific and Technological Journal.\n\nPaper Details:\n- ID: 161250\n- Title: \"Ai Technology\"\n\nPlease log in to your Reviewer Dashboard within 3 days to ACCEPT or DECLINE this invitation. If accepted, your review will be due by 15/6/2026.\n\nThank you for your valuable contribution to peer review.\n\nBest regards,\nAssociate Editor track manager",
+    "templateParams": {
+      "paperID": 161250,
+      "reviewerName": "Priya",
+      "deadline": "2026-06-15T00:00:00.000Z"
+    }
+  },
+  {
+    "id": 1781260401483,
+    "timestamp": "2026-06-12T10:33:21.479Z",
+    "to": "anzil@gmail.com",
+    "subject": "[IST Journal] Peer Review Invitation for Manuscript ID 161250",
+    "body": "Dear Dr. Anzil,\n\nYou have been invited by Associate Editor Jawid to review the following manuscript submitted to the International Scientific and Technological Journal.\n\nPaper Details:\n- ID: 161250\n- Title: \"Ai Technology\"\n\nPlease log in to your Reviewer Dashboard within 3 days to ACCEPT or DECLINE this invitation. If accepted, your review will be due by 15/6/2026.\n\nThank you for your valuable contribution to peer review.\n\nBest regards,\nAssociate Editor track manager",
+    "templateParams": {
+      "paperID": 161250,
+      "reviewerName": "Anzil",
+      "deadline": "2026-06-15T00:00:00.000Z"
+    }
+  },
+  {
+    "id": 1779554809048,
+    "timestamp": "2026-05-23T16:46:49.047Z",
+    "to": "jawid@gmail.com",
+    "subject": "[IST Journal] New Manuscript Assigned for Track Management",
+    "body": "Dear Jawid,\n\nWe have assigned a new manuscript to your track for evaluation and reviewer selection.\n\nPaper Details:\n- ID: 161250\n- Title: \"Ai Technology\"\n- Category: AI / Computer Science\n\nPlease log in to your Associate Editor Dashboard to perform the screening check and invite peer reviewers.\n\nBest regards,\nEditor-in-Chief",
+    "templateParams": {
+      "paperID": 161250,
+      "role": "ASSOCIATE_EDITOR",
+      "name": "Jawid"
+    }
+  },
+  {
+    "id": 1779554640763,
+    "timestamp": "2026-05-23T16:44:00.762Z",
+    "to": "mithun@gmail.com, aathil@gmail.com, rizwan@gmail.com",
+    "subject": "[IST Journal] Manuscript Status Updated: Under Editorial Review",
+    "body": "Dear Aathil, Rizwan,\n\nWe are pleased to inform you that your manuscript titled \"Ai Technology\" has successfully passed the initial editorial screening checks (formatting, plagiarism, scope match, ethical compliance) and has been forwarded to the peer review stage.\n\nYour paper status is now: Awaiting Reviewer Assignment.\n\nBest regards,\nEditorial Office",
+    "templateParams": {
+      "paperID": 161250,
+      "decision": "FORWARD"
+    }
+  }
+]

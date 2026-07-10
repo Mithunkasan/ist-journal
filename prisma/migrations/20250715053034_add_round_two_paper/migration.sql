@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "Status" ADD VALUE 'ROUND_TWO_PAPER';
