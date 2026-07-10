@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Journal Manuscript Workflow | IST Journal</title>
+  <meta name="description" content="Interactive visualization of the IST Journal manuscript submission and peer-review workflow from author submission to final publication." />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #08090f;
+      --surface: #0f1118;
+      --surface2: #161922;
+      --border: rgba(255,255,255,0.07);
+      --text: #e8eaf0;
+      --muted: #6b7280;
+
+      /* Role colours */
+      --author:   #6366f1;
+      --editor:   #f59e0b;
+      --assoc:    #10b981;
+      --reviewer: #3b82f6;
+      --prod:     #ec4899;
+
+      --reject: #ef4444;
+      --accept: #22c55e;
+      --cycle:  #a855f7;
+      --arrow:  rgba(255,255,255,0.18);
+
+      --glow-author:   0 0 18px rgba(99,102,241,.45);
+      --glow-editor:   0 0 18px rgba(245,158,11,.45);
+      --glow-assoc:    0 0 18px rgba(16,185,129,.45);
+      --glow-reviewer: 0 0 18px rgba(59,130,246,.45);
+      --glow-prod:     0 0 18px rgba(236,72,153,.45);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── BACKGROUND MESH ──────────────────────────────── */
+    .bg-mesh {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(99,102,241,.12) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 80%, rgba(16,185,129,.08) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 50% 50%, rgba(245,158,11,.05) 0%, transparent 60%);
+    }
+
+    /* ── HEADER ───────────────────────────────────────── */
+    header {
+      position: relative; z-index: 10;
+      text-align: center;
+      padding: 56px 24px 40px;
+    }
+    .header-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(99,102,241,.12);
+      border: 1px solid rgba(99,102,241,.3);
+      border-radius: 100px;
+      padding: 6px 16px;
+      font-size: 12px; font-weight: 600; letter-spacing: .08em;
+      color: #a5b4fc; text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .header-badge::before {
+      content: '';
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #6366f1;
+      box-shadow: 0 0 8px #6366f1;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity:1; transform: scale(1); }
+      50%      { opacity:.5; transform: scale(1.4); }
+    }
+    header h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(28px, 5vw, 52px);
+      font-weight: 800;
+      line-height: 1.12;
+      background: linear-gradient(135deg, #e8eaf0 30%, #a5b4fc 70%, #6ee7b7 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 14px;
+    }
+    header p {
+      font-size: 16px; color: var(--muted); max-width: 640px; margin: 0 auto 32px;
+      line-height: 1.7;
+    }
+
+    /* ── LEGEND ───────────────────────────────────────── */
+    .legend {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
+      margin-bottom: 12px;
+    }
+    .legend-item {
+      display: flex; align-items: center; gap: 7px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 100px; padding: 5px 14px;
+      font-size: 12px; font-weight: 500; cursor: pointer;
+      transition: all .25s;
+    }
+    .legend-item:hover { transform: translateY(-2px); border-color: rgba(255,255,255,.18); }
+    .legend-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+
+    /* ── MAIN CANVAS ──────────────────────────────────── */
+    main {
+      position: relative; z-index: 5;
+      padding: 0 16px 80px;
+    }
+
+    .workflow-container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* ── STEP CARD ─────────────────────────────────────  */
+    .step {
+      position: relative;
+      display: flex; align-items: flex-start; gap: 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 22px 24px;
+      margin-bottom: 4px;
+      cursor: pointer;
+      transition: transform .3s, box-shadow .3s, border-color .3s;
+      overflow: hidden;
+    }
+    .step::before {
+      content: '';
+      position: absolute; inset: 0;
+      border-radius: 18px;
+      opacity: 0;
+      transition: opacity .3s;
+    }
+    .step:hover { transform: translateX(6px); }
+    .step:hover::before { opacity: 1; }
+    .step.active { transform: translateX(6px) scale(1.005); }
+
+    .step[data-role="author"]   { border-left: 3px solid var(--author); }
+    .step[data-role="editor"]   { border-left: 3px solid var(--editor); }
+    .step[data-role="assoc"]    { border-left: 3px solid var(--assoc); }
+    .step[data-role="reviewer"] { border-left: 3px solid var(--reviewer); }
+    .step[data-role="prod"]     { border-left: 3px solid var(--prod); }
+    .step[data-role="decision"] { border-left: 3px solid var(--cycle); }
+
+    .step[data-role="author"]:hover   { box-shadow: var(--glow-author); border-color: rgba(99,102,241,.4); }
+    .step[data-role="editor"]:hover   { box-shadow: var(--glow-editor); border-color: rgba(245,158,11,.4); }
+    .step[data-role="assoc"]:hover    { box-shadow: var(--glow-assoc);  border-color: rgba(16,185,129,.4); }
+    .step[data-role="reviewer"]:hover { box-shadow: var(--glow-reviewer); border-color: rgba(59,130,246,.4); }
+    .step[data-role="prod"]:hover     { box-shadow: var(--glow-prod);   border-color: rgba(236,72,153,.4); }
+    .step[data-role="decision"]:hover { box-shadow: 0 0 18px rgba(168,85,247,.45); border-color: rgba(168,85,247,.4); }
+
+    /* icon circle */
+    .step-icon {
+      width: 48px; height: 48px; flex-shrink: 0;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+    }
+    .step[data-role="author"]   .step-icon { background: rgba(99,102,241,.15); }
+    .step[data-role="editor"]   .step-icon { background: rgba(245,158,11,.15); }
+    .step[data-role="assoc"]    .step-icon { background: rgba(16,185,129,.15); }
+    .step[data-role="reviewer"] .step-icon { background: rgba(59,130,246,.15); }
+    .step[data-role="prod"]     .step-icon { background: rgba(236,72,153,.15); }
+    .step[data-role="decision"] .step-icon { background: rgba(168,85,247,.15); }
+
+    .step-content { flex: 1; min-width: 0; }
+    .step-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .step-title { font-size: 15px; font-weight: 700; color: var(--text); line-height: 1.3; }
+    .step-role-tag {
+      font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em;
+      padding: 3px 10px; border-radius: 100px; white-space: nowrap; flex-shrink: 0;
+    }
+    .step[data-role="author"]   .step-role-tag { background: rgba(99,102,241,.18); color: #a5b4fc; }
+    .step[data-role="editor"]   .step-role-tag { background: rgba(245,158,11,.18); color: #fcd34d; }
+    .step[data-role="assoc"]    .step-role-tag { background: rgba(16,185,129,.18); color: #6ee7b7; }
+    .step[data-role="reviewer"] .step-role-tag { background: rgba(59,130,246,.18); color: #93c5fd; }
+    .step[data-role="prod"]     .step-role-tag { background: rgba(236,72,153,.18); color: #f9a8d4; }
+    .step[data-role="decision"] .step-role-tag { background: rgba(168,85,247,.18); color: #d8b4fe; }
+
+    .step-desc {
+      font-size: 13px; color: var(--muted); line-height: 1.65;
+      margin-top: 8px;
+      max-height: 0; overflow: hidden;
+      transition: max-height .45s ease, margin-top .3s;
+    }
+    .step.active .step-desc { max-height: 200px; margin-top: 10px; }
+
+    .step-num {
+      position: absolute; right: 20px; bottom: 16px;
+      font-size: 11px; font-weight: 700; color: rgba(255,255,255,.08);
+      font-family: 'Outfit', sans-serif; letter-spacing: .04em;
+    }
+
+    /* ── CONNECTOR / ARROW ────────────────────────────── */
+    .connector {
+      display: flex; flex-direction: column; align-items: flex-start;
+      padding-left: 43px; /* align with icon center */
+      gap: 0;
+      margin: 0;
+    }
+    .connector-line {
+      width: 2px;
+      background: linear-gradient(to bottom, rgba(255,255,255,.12), rgba(255,255,255,.04));
+      margin-left: 23px;
+    }
+    .connector-line.tall { height: 28px; }
+    .connector-line.short { height: 16px; }
+
+    /* ── BRANCH / DECISION BOX ────────────────────────── */
+    .branch-box {
+      position: relative;
+      margin: 4px 0;
+    }
+    .branch-label {
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 20px;
+      background: var(--surface2);
+      border: 1px dashed rgba(168,85,247,.35);
+      border-radius: 14px;
+      font-size: 13px; font-weight: 600; color: #c084fc;
+    }
+    .branch-label .diamond {
+      width: 28px; height: 28px; flex-shrink: 0;
+      background: rgba(168,85,247,.15);
+      transform: rotate(45deg);
+      border-radius: 5px;
+      border: 1.5px solid rgba(168,85,247,.4);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .branch-label .diamond span { transform: rotate(-45deg); font-size: 13px; }
+
+    /* ── OUTCOME BRANCHES ─────────────────────────────── */
+    .outcomes {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 8px 0 4px;
+    }
+    .outcomes.three { grid-template-columns: 1fr 1fr 1fr; }
+    .outcome-card {
+      border-radius: 14px;
+      padding: 14px 16px;
+      border: 1px solid;
+      font-size: 12.5px; font-weight: 500; line-height: 1.55;
+      position: relative; overflow: hidden;
+    }
+    .outcome-card.reject {
+      background: rgba(239,68,68,.07); border-color: rgba(239,68,68,.3);
+      color: #fca5a5;
+    }
+    .outcome-card.accept {
+      background: rgba(34,197,94,.07); border-color: rgba(34,197,94,.3);
+      color: #86efac;
+    }
+    .outcome-card.revise {
+      background: rgba(245,158,11,.07); border-color: rgba(245,158,11,.3);
+      color: #fcd34d;
+    }
+    .outcome-card.cycle {
+      background: rgba(168,85,247,.07); border-color: rgba(168,85,247,.3);
+      color: #d8b4fe;
+    }
+    .outcome-title { font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+    .outcome-badge {
+      font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em;
+      padding: 2px 7px; border-radius: 100px;
+    }
+    .reject .outcome-badge  { background: rgba(239,68,68,.25); color: #fca5a5; }
+    .accept .outcome-badge  { background: rgba(34,197,94,.25);  color: #86efac; }
+    .revise .outcome-badge  { background: rgba(245,158,11,.25); color: #fcd34d; }
+    .cycle  .outcome-badge  { background: rgba(168,85,247,.25); color: #d8b4fe; }
+
+    /* ── REVIEW MODES GRID ────────────────────────────── */
+    .review-modes {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;
+      margin: 12px 0 4px;
+    }
+    .review-mode {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 12px; padding: 12px 14px;
+      font-size: 12px; font-weight: 500; color: #9ca3af;
+      transition: all .25s;
+      cursor: default;
+    }
+    .review-mode:hover {
+      border-color: rgba(59,130,246,.35);
+      color: #93c5fd;
+      background: rgba(59,130,246,.07);
+    }
+    .review-mode-title { font-weight: 700; color: var(--text); margin-bottom: 3px; font-size: 12px; }
+
+    /* ── PRODUCTION STEPS ─────────────────────────────── */
+    .prod-tags {
+      display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px;
+    }
+    .prod-tag {
+      background: rgba(236,72,153,.1); border: 1px solid rgba(236,72,153,.25);
+      border-radius: 100px; padding: 4px 12px;
+      font-size: 11px; font-weight: 600; color: #f9a8d4;
+    }
+
+    /* ── FINAL PUBLISHED ──────────────────────────────── */
+    .published-banner {
+      margin-top: 4px;
+      background: linear-gradient(135deg, rgba(34,197,94,.1), rgba(16,185,129,.08));
+      border: 1px solid rgba(34,197,94,.3);
+      border-radius: 18px;
+      padding: 28px;
+      text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .published-banner::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 60% 60% at 50% 50%, rgba(34,197,94,.08) 0%, transparent 70%);
+    }
+    .published-banner h3 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 22px; font-weight: 800;
+      color: #4ade80; margin-bottom: 8px;
+      position: relative;
+    }
+    .published-banner p {
+      font-size: 13px; color: #6ee7b7; position: relative; max-width: 440px; margin: 0 auto;
+    }
+    .pub-icon { font-size: 42px; margin-bottom: 12px; display: block; }
+    .sparkle {
+      position: absolute;
+      width: 5px; height: 5px; border-radius: 50%;
+      background: #4ade80; opacity: .6;
+      animation: sparkle-anim 3s ease-in-out infinite;
+    }
+    @keyframes sparkle-anim {
+      0%,100% { opacity:.1; transform: scale(.5); }
+      50%      { opacity:.8; transform: scale(1.3); }
+    }
+
+    /* ── STATS BAR ────────────────────────────────────── */
+    .stats-bar {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 12px;
+      margin-bottom: 36px;
+    }
+    .stat-pill {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 100px; padding: 8px 20px;
+      display: flex; align-items: center; gap: 9px;
+      font-size: 13px;
+    }
+    .stat-num { font-weight: 800; font-family: 'Outfit', sans-serif; font-size: 16px; }
+
+    /* scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 3px; }
+
+    /* ── RESPONSIVE ───────────────────────────────────── */
+    @media (max-width: 640px) {
+      .outcomes, .outcomes.three, .review-modes { grid-template-columns: 1fr; }
+      header h1 { font-size: 26px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-mesh"></div>
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-badge">Peer-Review Process</div>
+    <h1>Journal Manuscript Workflow</h1>
+    <p>An end-to-end interactive visualization of the manuscript submission, peer-review, and publication lifecycle.</p>
+
+    <!-- STATS -->
+    <div class="stats-bar">
+      <div class="stat-pill">
+        <span class="stat-num" style="color:#6366f1">5</span>
+        <span style="color:var(--muted)">Key Stakeholders</span>
+      </div>
+      <div class="stat-pill">
+        <span class="stat-num" style="color:#f59e0b">4</span>
+        <span style="color:var(--muted)">Review Models</span>
+      </div>
+      <div class="stat-pill">
+        <span class="stat-num" style="color:#10b981">4</span>
+        <span style="color:var(--muted)">Decision Outcomes</span>
+      </div>
+      <div class="stat-pill">
+        <span class="stat-num" style="color:#ec4899">5</span>
+        <span style="color:var(--muted)">Production Stages</span>
+      </div>
+    </div>
+
+    <!-- LEGEND -->
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--author)"></div>Author</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--editor)"></div>Editor</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--assoc)"></div>Associate Editor</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--reviewer)"></div>Reviewer</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--prod)"></div>Production</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--cycle)"></div>Decision Gate</div>
+    </div>
+  </header>
+
+  <!-- WORKFLOW -->
+  <main>
+    <div class="workflow-container">
+
+      <!-- ① AUTHOR SUBMISSION -->
+      <div class="step" data-role="author" id="step-1" onclick="toggleStep(this)">
+        <div class="step-icon">📝</div>
+        <div class="step-content">
+          <div class="step-header">
+            <div class="step-title">Manuscript Submission</div>
+            <span class="step-role-tag">Author</span>
+          </div>
+          <div class="step-desc">
+            The Author prepares and submits the research manuscript through the journal's online submission system. 
+            The submission package typically includes the main manuscript, abstract, cover letter, figures, 
+            supplementary files, author declarations, and conflict-of-interest statements.
+          </div>
+        </div>
+        <span class="step-num">01</span>
+      </div>
+
+      <div class="connector"><div class="connector-line tall"></div></div>
+
+      <!-- ② EDITOR SCREENING -->
+      <div class="step" data-role="editor" id="step-2" onclick="toggleStep(this)">
+        <div class="step-icon">🔍</div>
+        <div class="step-content">
+          <div class="step-header">
+            <div class="step-title">Initial Screening</div>
+            <span class="step-role-tag">Editor</span>
+          </div>
+          <div class="step-desc">
+            The Editor-in-Chief performs an initial screening to verify the manuscript's alignment with the journal's 
+            scope, quality standards, formatting requirements, and ethical guidelines. This stage checks for 
+            plagiarism, data integrity, authorship, and basic scientific soundness before investing reviewer resources.
+          </div>
+        </div>
+        <span class="step-num">02</span>
+      </div>
+
+      <div class="connector"><div class="connector-line short"></div></div>
+
+      <!-- DECISION: DESK REJECTION? -->
+      <div class="branch-box">
+        <div class="branch-label">
+          <div class="diamond"><span>?</span></div>
+          Passes Initial Screening?
+        </div>
+      </div>
+
+      <!-- OUTCOMES: DESK REJECT / CONTINUE -->
+      <div class="outcomes" style="margin-top:8px; margin-bottom:8px;">
+        <div class="outcome-card reject">
+          <div class="outcome-title">
+            <span class="outcome-badge">No</span>
+            Desk Rejection
+          </div>
+          The manuscript is rejected without peer review. The Author is notified with reasons. The submission process terminates here.
+        </div>
+        <div class="outcome-card accept">
+          <div class="outcome-title">
+            <span class="outcome-badge">Yes</span>
+            Proceeds to Review
+          </div>
+          The manuscript meets the journal's standards and is forwarded to an Associate Editor for further handling.
+        </div>
+      </div>
+
+      <div class="connector"><div class="connector-line short"></div></div>
+
+      <!-- ③ ASSOCIATE EDITOR ASSIGNMENT -->
+      <div class="step" data-role="assoc" id="step-3" onclick="toggleStep(this)">
+        <div class="step-icon">🧩</div>
+        <div class="step-content">
+          <div class="step-header">
+            <div class="step-title">Associate Editor Assignment & Preliminary Assessment</div>
+            <span class="step-role-tag">Associate Editor</span>
+          </div>
+          <div class="step-desc">
+            The Editor assigns the manuscript to an Associate Editor whose expertise aligns with the manuscript's 
+            subject area. The Associate Editor conducts a preliminary assessment and identifies suitable reviewers 
+            based on their domain knowledge, publication record, and availability. Conflicts of interest are carefully checked.
+          </div>
+        </div>
+        <span class="step-num">03</span>
+      </div>
+
+      <div class="connector"><div class="connector-line short"></div></div>
+
+      <!-- REVIEW MODELS -->
+      <div class="review-modes">
+        <div class="review-mode">
+          <div class="review-mode-title">🙈 Single-Blind Review</div>
+          Reviewers know the authors' identities, but authors do not know who reviewed their work.
+        </div>
+        <div class="review-mode">
+          <div class="review-mode-title">🙈🙈 Double-Blind Review</div>
+          Both reviewer and author identities are concealed from each other during the review process.
+        </div>
+        <div class="review-mode">
+          <div class="review-mode-title">🙈🙈🙈 Triple-Blind Review</div>
+          Reviewers, authors, and editors are all anonymous, maximizing objectivity.
+        </div>
+        <div class="review-mode">
+          <div class="review-mode-title">🌐 Open Peer Review</div>
+          Identities of reviewers and authors are known to all parties; reviews may be published.
+        </div>
+      </div>
+
+      <div class="connector"><div class="connector-line short"></div></div>
+
+      <!-- ④ PEER REVIEW -->
+      <div class="step" data-role="reviewer" id="step-4" onclick="toggleStep(this)">
+        <div class="step-icon">🔬</div>
+        <div class="step-content">
+          <div class="step-header">
+            <div class="step-title">Peer Review Evaluation</div>
+            <span class="step-role-tag">Reviewer</span>
+          </div>
+          <div class="step-desc">
+            Selected Reviewers independently evaluate the manuscript and submit detailed review reports covering 
+            scientific quality, originality, methodology, statistical validity, ethical considerations, clarity 
+            of presentation, and overall significance. Each reviewer provides a recommendation to accept, reject, 
+            or request revisions.
+          </div>
+        </div>
+        <span class="step-num">04</span>
+      </div>
+
+      <div class="connector"><div class="connector-line tall"></div></div>
+
+      <!-- ⑤ AE RECOMMENDATION -->
+      <div class="step" data-role="assoc" id="step-5" onclick="toggleStep(this)">
+        <div class="step-icon">📋</div>
+        <div class="step-content">
+          <div class="step-header">
+            <div class="step-title">Associate Editor Recommendation</div>
+            <span class="step-role-tag">Associate Editor</span>
+          </div>
+          <div class="step-desc">
+            The Associate Editor synthesizes all reviewer feedback and weighs the individual recommendations 
+            to form a consolidated editorial recommendation. This recommendation, along with the collated 
+            reviewer reports, is submitted to the Editor for the final editorial decision.
+          </div>
+        </div>
+        <span class="step-num">05</span>
+      </div>
+
+      <div class="connector"><div class="connector-line short"></div></div>
+
+      <!-- DECISION: EDITORIAL DECISION -->
+      <div class="branch-box">
+        <div class="branch-label">
+          <div class="diamond"><span>⚖</span></div>
+          Editorial Decision
+        </div>
+      </div>
+
+      <!-- 4 OUTCOMES -->
+      <div class="outcomes three" style="grid-template-columns:1fr 1fr; margin-top:8px; margin-bottom:8px;">
+        <div class="outcome-card reject">
+          <div class="outcome-title">
+            <span class="outcome-badge">❌ Reject</span>
+          </div>
+          The manuscript does not meet the journal's standards and is rejected. The Author is notified. The workflow concludes.
+        </div>
+        <div class="outcome-card accept">
+          <div class="outcome-title">
+            <span class="outcome-badge">✅ Accept</span>
+          </div>
+          The manuscript is accepted as-is. Proceeds directly to the production and publication stage.
+        </div>
+        <div class="outcome-card revise">
+          <div class="outcome-title">
+            <span class="outcome-badge">📝 Minor Revision</span>
+          </div>
+          Small corrections required. Author revises and resubmits; typically re-evaluated by Associate Editor only.
+        </div>
+        <div class="outcome-card cycle">
+          <div class="outcome-title">
+            <span class="outcome-badge">🔄 Major Revision</span>
+          </div>
+          Substantial rework needed. Manuscript returns for a full review cycle with reviewers after revision.
+        </div>
+      </div>
+
+      <div class="connector"><div class="connector-line short"></div></div>
+
+      <!-- ⑥ AUTHOR REVISION -->
+      <div class="step" data-role="author" id="step-6" onclick="toggleStep(this)">
+        <div class="step-icon">✏️</div>
+        <div class="step-content">
+          <div class="step-header">
+            <div class="step-title">Author Revision & Resubmission</div>
+            <span class="step-role-tag">Author</span>
+          </div>
+          <div class="step-desc">
+            The Author revises the manuscript in response to the editorial decision and reviewer comments. 
+            A point-by-point response letter is prepared alongside the revised manuscript, clearly addressing 
+            each comment. The revised package is resubmitted through the system, triggering another review cycle if required.
+          </div>
+        </div>
+        <span class="step-num">06</span>
+      </div>
+
+      <div class="connector"><div class="connector-line short"></div></div>
+
+      <!-- CYCLE LOOP VISUAL -->
+      <div class="branch-box">
+        <div class="branch-label" style="border-color:rgba(168,85,247,.35);">
+          <div class="diamond" style="font-size:11px;"><span>🔄</span></div>
+          Review Cycle(s) — may repeat until all concerns are addressed
+        </div>
+      </div>
+
+      <div class="connector"><div class="connector-line short"></div></div>
+
+      <!-- ⑦ FINAL RECOMMENDATION -->
+      <div class="step" data-role="assoc" id="step-7" onclick="toggleStep(this)">
+        <div class="step-icon">✅</div>
+        <div class="step-content">
+          <div class="step-header">
+            <div class="step-title">Final Recommendation to Editor</div>
+            <span class="step-role-tag">Associate Editor</span>
+          </div>
+          <div class="step-desc">
+            After all revision cycles are complete and reviewer concerns have been satisfactorily addressed, 
+            the Associate Editor provides a final consolidated recommendation to the Editor, indicating that 
+            the manuscript is ready for a publication decision.
+          </div>
+        </div>
+        <span class="step-num">07</span>
+      </div>
+
+      <div class="connector"><div class="connector-line short"></div></div>
+
+      <!-- FINAL DECISION -->
+      <div class="branch-box">
+        <div class="branch-label">
+          <div class="diamond"><span>⚖</span></div>
+          Final Publication Decision
+        </div>
+      </div>
+
+      <div class="outcomes" style="margin-top:8px; margin-bottom:8px;">
+        <div class="outcome-card reject">
+          <div class="outcome-title">
+            <span class="outcome-badge">❌ Rejected</span>
+          </div>
+          If concerns remain unresolved or the manuscript does not meet the bar, it is rejected. The workflow concludes here.
+        </div>
+        <div class="outcome-card accept">
+          <div class="outcome-title">
+            <span class="outcome-badge">✅ Accepted</span>
+          </div>
+          Manuscript is formally accepted for publication. It proceeds to the production and typesetting stage.
+        </div>
+      </div>
+
+      <div class="connector"><div class="connector-line tall"></div></div>
+
+      <!-- ⑧ PRODUCTION -->
+      <div class="step" data-role="prod" id="step-8" onclick="toggleStep(this)">
+        <div class="step-icon">⚙️</div>
+        <div class="step-content">
+          <div class="step-header">
+            <div class="step-title">Production & Publication Preparation</div>
+            <span class="step-role-tag">Production</span>
+          </div>
+          <div class="step-desc">
+            The accepted manuscript enters the production pipeline handled by the journal's production team.
+            All activities are carried out to prepare the final article for publication.
+          </div>
+          <div class="prod-tags">
+            <span class="prod-tag">📖 Copyediting</span>
+            <span class="prod-tag">🎨 Formatting</span>
+            <span class="prod-tag">🔎 Proofreading</span>
+            <span class="prod-tag">🖨️ Typesetting</span>
+            <span class="prod-tag">🔗 DOI Assignment</span>
+          </div>
+        </div>
+        <span class="step-num">08</span>
+      </div>
+
+      <div class="connector"><div class="connector-line tall"></div></div>
+
+      <!-- ⑨ PUBLISHED -->
+      <div class="published-banner">
+        <div class="sparkle" style="top:15%; left:8%; animation-delay:.2s;"></div>
+        <div class="sparkle" style="top:70%; left:15%; animation-delay:.8s;"></div>
+        <div class="sparkle" style="top:20%; right:10%; animation-delay:.5s;"></div>
+        <div class="sparkle" style="top:80%; right:18%; animation-delay:1.2s;"></div>
+        <div class="sparkle" style="top:50%; left:50%; animation-delay:.3s;"></div>
+        <span class="pub-icon">🎉</span>
+        <h3>Article Published</h3>
+        <p>The research article is officially published in the journal and made freely available to the global readership.</p>
+      </div>
+
+    </div><!-- /workflow-container -->
+  </main>
+
+  <script>
+    function toggleStep(el) {
+      const wasActive = el.classList.contains('active');
+      // collapse all
+      document.querySelectorAll('.step.active').forEach(s => s.classList.remove('active'));
+      if (!wasActive) el.classList.add('active');
+    }
+
+    // Staggered entrance animation
+    const steps = document.querySelectorAll('.step, .branch-box, .outcomes, .review-modes, .published-banner');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = entry.target.classList.contains('step')
+              ? 'translateX(0)' : 'translateY(0)';
+          }, 60);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    steps.forEach(el => {
+      el.style.opacity = '0';
+      if (el.classList.contains('step')) {
+        el.style.transform = 'translateX(-20px)';
+      } else {
+        el.style.transform = 'translateY(10px)';
+      }
+      el.style.transition = 'opacity .5s ease, transform .5s ease, box-shadow .3s, border-color .3s';
+      observer.observe(el);
+    });
+  </script>
+</body>
+</html>

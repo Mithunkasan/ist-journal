@@ -1,0 +1,49 @@
+variables
+	1.var
+	2.let
+	3.const
+hosting of variables
+
+function
+	arrow functions
+	higher oder funciton
+
+array and object destructuring
+rest operator
+spread operator
+
+if else
+trenary opeerator
+ using && ||
+optional chaining
+
+array methods
+map filter reduce sort
+
+event listeners
+ onclick
+ onblur
+ onchange
+ onfocus
+
+settimeout() and setinterval
+
+callbacks
+callback hall
+promises
+promise apis
+
+async await
+
+try catch
+
+
+
+
+
+
+
+
+
+
+	

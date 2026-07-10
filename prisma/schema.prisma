@@ -1,0 +1,455 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+
+
+
+enum UserRole {
+  ADMIN
+  EDITOR  
+  AUTHOR
+  REVIEWER
+  ASSOCIATE_EDITOR
+}
+
+
+enum  UserStatus {
+  ACTIVE
+  IN_ACTIVE  
+}
+
+
+enum Status {
+  SUBMITTED
+  ASSIGNED_TO_EDITOR
+  UNDER_EDITOR_REVIEW
+  REVIEWER_ASSIGNED
+  UNDER_REVIEW_BY_REVIEWER
+  DECISION_PENDING
+  REVISIONS_REQUESTED
+  REVISIONS_SUBMITTED
+  Review1
+  Review2
+  Review3
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+  PUBLISHED
+  ROUND_TWO_PAPER
+
+  // Redesigned Workflow Statuses
+  EDITOR_SCREENING
+  DESK_REJECTED
+  ASSOCIATE_EDITOR_REVIEW
+  REVIEWER_ASSIGNMENT
+  UNDER_REVIEW
+  EDITOR_DECISION
+  MINOR_REVISION
+  MAJOR_REVISION
+  REVISION_SUBMITTED
+  UNDER_REVIEW_AGAIN
+  PRODUCTION
+}
+
+model User {
+  id                String    @id @default(cuid())
+  name              String? 
+  email             String?   @unique
+  emailVerified     DateTime?
+  image             String?
+  role              UserRole?
+  hashedPassword    String?
+  password          String?
+  university        String?
+  qualification     String?
+  areaOfExpertise   String?
+  createdDate       DateTime?
+  updatedAt         DateTime  @default(now()) @updatedAt
+  Status UserStatus?
+  orcid             String?
+  assignedJournals  AssignedJournals[] @relation(name: "AssignedJournals_User")
+  reviewingJournals AssignedJournals[] @relation(name: "AssignedJournals_Reviewer")
+  reviewedJournals  AssignedJournals[] @relation(name: "AssignedJournals_Reviewers")
+
+  // Redesigned workflow profiles
+  authorProfile          Author?
+  editorProfile          Editor?
+  associateEditorProfile AssociateEditor?
+  reviewerProfile        Reviewer?
+  notifications          Notification[]
+  activityLogs           ActivityLog[]
+  decisions              Decision[]
+
+  @@index([role])         // speeds up get-reviewer, get-editor, get-associate queries
+  @@index([Status])
+  @@index([Status, createdDate])
+}
+
+model Author {
+  id          String       @id @default(cuid())
+  userId      String       @unique
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  submissions Submission[]
+}
+
+model Editor {
+  id          String       @id @default(cuid())
+  userId      String       @unique
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  submissions Submission[]
+}
+
+model AssociateEditor {
+  id          String       @id @default(cuid())
+  userId      String       @unique
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  submissions Submission[]
+}
+
+model Reviewer {
+  id          String       @id @default(cuid())
+  userId      String       @unique
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assignments ReviewAssignment[]
+  reviews     Review[]
+}
+
+model Manuscript {
+  id                    String       @id @default(cuid())
+  submissionId          String
+  submission            Submission   @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  title                 String
+  abstract              String
+  keywords              String
+  category              String
+  authors               String       // Comma-separated list of author names
+  pdfUrl                String
+  coverLetterUrl        String?
+  supplementaryFilesUrl String?
+  roundNumber           Int          @default(1)
+  createdAt             DateTime     @default(now())
+  reviews               Review[]
+}
+
+model Submission {
+  id                 String             @id @default(cuid())
+  paperID            Int                @unique
+  title              String
+  status             Status
+  authorId           String
+  author             Author             @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  editorId           String?
+  editor             Editor?            @relation(fields: [editorId], references: [id], onDelete: SetNull)
+  associateEditorId  String?
+  associateEditor    AssociateEditor?   @relation(fields: [associateEditorId], references: [id], onDelete: SetNull)
+  manuscripts        Manuscript[]
+  reviewAssignments  ReviewAssignment[]
+  revisions          Revision[]
+  decisions          Decision[]
+  production         Production?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+}
+
+model ReviewAssignment {
+  id            String     @id @default(cuid())
+  submissionId  String
+  submission    Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  reviewerId    String
+  reviewer      Reviewer   @relation(fields: [reviewerId], references: [id], onDelete: Cascade)
+  roundNumber   Int
+  status        String     // PENDING, ACCEPTED, DECLINED, COMPLETED
+  blindType     String     // SINGLE_BLIND, DOUBLE_BLIND, TRIPLE_BLIND, OPEN
+  reviews       Review[]
+  createdAt     DateTime   @default(now())
+}
+
+model Review {
+  id                String           @id @default(cuid())
+  assignmentId      String
+  assignment        ReviewAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  reviewerId        String
+  reviewer          Reviewer         @relation(fields: [reviewerId], references: [id], onDelete: Cascade)
+  manuscriptId      String
+  manuscript        Manuscript       @relation(fields: [manuscriptId], references: [id], onDelete: Cascade)
+  roundNumber       Int
+  recommendation    String?          // ACCEPT, MINOR_REVISION, MAJOR_REVISION, REJECT
+  commentsForAuthor String?
+  commentsForEditor String?
+  submittedAt       DateTime         @default(now())
+}
+
+model Revision {
+  id                 String     @id @default(cuid())
+  submissionId       String
+  submission         Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  roundNumber        Int
+  revisedPdfUrl      String
+  responseLetterUrl  String
+  revisionNotes      String
+  createdAt          DateTime   @default(now())
+}
+
+model Decision {
+  id           String     @id @default(cuid())
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  decisionType String     // DESK_REJECTED, AE_RECOMMEND_REJECT, AE_RECOMMEND_REVIEW, AE_RECOMMEND_REVISION, ACCEPTED, MINOR_REVISION, MAJOR_REVISION, REJECTED
+  comments     String?
+  editorId     String
+  editor       User       @relation(fields: [editorId], references: [id], onDelete: Cascade)
+  roundNumber  Int
+  createdAt    DateTime   @default(now())
+}
+
+model Production {
+  id            String     @id @default(cuid())
+  submissionId  String     @unique
+  submission    Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  stage         String     // COPY_EDITING, PROOFREADING, TYPESETTING, DOI_GENERATION, PUBLICATION_SCHEDULING, PUBLISHED
+  doi           String?
+  updatedAt     DateTime   @updatedAt
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model ActivityLog {
+  id             String    @id @default(cuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action         String
+  submissionId   String?
+  previousStatus String?
+  newStatus      String?
+  timestamp      DateTime  @default(now())
+
+  @@index([timestamp])
+}
+
+model SubmittedJournals{
+  id                Int                @id @default(autoincrement())
+  paperID Int? 
+  type String?
+  title String?
+  abstract String?
+  paperUrl String?
+  primaryDomain String?
+  secondaryDomain String?
+  country String?
+  authorNames String?
+  authorEmail String?
+  keywords String?
+  howToKnow String?
+  isSubmitted Boolean?
+  isAssigndToEditor Boolean?
+  associateEditor String?
+  isReviewerAssigned Boolean?
+  isAssociatedEditorAssigned Boolean?
+  isPublished       Boolean?
+  updatedAt     DateTime  @default(now()) @updatedAt
+  createdAt     DateTime?  
+  isAccepted    Boolean @default(false)
+  status Status?
+  
+  // Custom added workflow fields
+  supportingFilesUrl String?
+  category           String?
+  doi                String?
+  productionStep     Int?      @default(0)
+  revisionComments   String?
+  responseLetterUrl  String?
+  orcid              String?
+  coverLetterUrl     String?
+
+  @@index([authorEmail])  // speeds up author paper lookups
+  @@index([status])       // speeds up status-based filters
+  @@index([paperID])      // speeds up paperID deduplication
+  @@index([associateEditor, status, createdAt])
+  @@index([isAccepted, updatedAt])
+  @@index([updatedAt])
+}
+
+
+model AssignedJournals {
+  id                Int                @id @default(autoincrement())
+  paperID           Int?                       
+  type              String?
+  title             String?      
+  abstract          String?
+  paperUrl          String?
+  primaryDomain     String?
+  secondaryDomain   String?
+  country           String?
+  authorNames       String?
+  authorEmail       String?
+  keywords          String?
+  txtUrl String?
+  isSubmitted Boolean?
+  isAssigndToEditor Boolean?
+  isReviewerAssigned Boolean?
+  isEditable        Boolean?
+  associateEditor  String?
+  isAssociatedEditorAssigned Boolean?
+  howToKnow         String?
+  updatedAt         DateTime  @default(now()) @updatedAt
+  createdAt         DateTime?
+  userId            String   // Add userId field to establish relation
+  user              User     @relation(name: "AssignedJournals_User", fields: [userId], references: [id])
+  editorName        String?
+  subEditorName     String?
+  reviewers         User[]   @relation(name: "AssignedJournals_Reviewers")
+  reviewerId        String?  // Add this field to establish relation with User model
+  reviewer          User?    @relation(name: "AssignedJournals_Reviewer", fields: [reviewerId], references: [id])
+  isPublished       Boolean?
+  status            Status?
+
+  // Custom added workflow fields
+  supportingFilesUrl String?
+  category           String?
+  doi                String?
+  productionStep     Int?      @default(0)
+  revisionComments   String?
+  responseLetterUrl  String?
+  orcid              String?
+  coverLetterUrl     String?
+
+  @@index([authorEmail])  // speeds up author paper lookups
+  @@index([status])       // speeds up status-based filters
+  @@index([paperID])      // speeds up paperID deduplication
+  @@index([userId])       // speeds up user relation join
+  @@index([associateEditor, status, updatedAt])
+  @@index([updatedAt])
+}
+
+model ReviewLegacy {
+  id                   Int               @id @default(autoincrement())
+  paperID              Int
+  reviewerId           String
+  reviewerName         String
+  commentsToAuthor     String?
+  commentsToEditor     String?
+  recommendation       String?           // ACCEPT, MINOR_REVISION, MAJOR_REVISION, REJECT
+  status               String            // INVITED, ACCEPTED, DECLINED, COMPLETED
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+  deadline             DateTime?
+
+  @@index([reviewerId, status, createdAt])
+  @@index([paperID])
+}
+
+
+model Archives{
+  id                Int @id @default(autoincrement())
+  editorName        String?
+  paperID Int?
+  type              String?
+  title             String?
+  isSubmitted Boolean?
+  isAssigndToEditor Boolean?
+  isReviewerAssigned Boolean?
+  isAssociatedEditorAssigned Boolean?
+  paperUrl          String?
+  abstract          String?
+  country           String?
+  primaryDomain     String?
+  secondaryDomain   String?
+  authorNames       String?
+  authorEmail       String?
+  keywords          String?
+  updatedAt         DateTime  @default(now()) @updatedAt
+  createdAt         DateTime?
+
+  isPublished       Boolean?
+  status            Status?
+  doi               String?
+  orcid             String?
+  coverLetterUrl     String?
+}
+
+model Published{
+  id                Int @id @default(autoincrement())
+  editorName        String?
+  associateEditor  String?
+  type              String?
+  title             String?
+  paperID           Int?  
+  volume String?
+  issue String?    
+  isSubmitted       Boolean?
+  isAssigndToEditor Boolean?
+  isReviewerAssigned Boolean?
+  isAssociatedEditorAssigned Boolean?
+  isPublished Boolean?
+  paperUrl          String?
+  abstract          String?
+  country           String?
+  primaryDomain     String?
+  secondaryDomain   String?
+  authorNames       String?
+  authorEmail       String?
+  keywords          String?
+  updatedAt         DateTime  @default(now()) @updatedAt
+  createdAt         DateTime?
+  status            Status?
+  doi               String?
+  orcid             String?
+  coverLetterUrl     String?
+
+  @@index([authorEmail])  // speeds up author published paper lookups
+  @@index([status])       // speeds up PUBLISHED status filter
+  @@index([paperID])
+  @@index([status, updatedAt])
+}
+
+model RejectedJournal{
+  id                Int @id @default(autoincrement())
+  rejectedPerson    String?
+  rejectedReasons   String?
+  type              String?
+  title             String?
+  editorName        String?
+  paperID Int?
+
+  paperUrl          String?
+  abstract          String?
+  country           String?
+  primaryDomain     String?
+  secondaryDomain   String?
+  authorNames       String?
+  authorEmail       String?
+  keywords          String?
+  isSubmitted Boolean?
+  isAssigndToEditor Boolean?
+  isReviewerAssigned Boolean?
+  isAssociatedEditorAssigned Boolean?
+  updatedAt         DateTime  @default(now()) @updatedAt
+  createdAt         DateTime?
+  status            Status?
+  coverLetterUrl     String?
+
+  @@index([authorEmail])
+  @@index([paperID])
+  @@index([status, updatedAt])
+  @@index([updatedAt])
+}
+
+
+
+

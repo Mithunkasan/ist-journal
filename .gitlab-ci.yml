@@ -1,0 +1,43 @@
+stages:
+  - build_and_push
+  - deploy
+
+variables:
+  IMAGE_NAME: aneeshpk32/istonline
+  IMAGE_TAG: $CI_COMMIT_REF_SLUG
+  # NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: dorqssw4i
+
+build_and_push:
+  image: docker/compose:latest
+  services:
+    - docker:dind
+  stage: build_and_push
+  before_script:
+    - echo "$DOCKER_PASSWORD" | docker login --username $DOCKER_USERNAME --password-stdin
+  script:
+    - docker-compose build --build-arg NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=dorqssw4i
+    - docker tag istonline:latest $IMAGE_NAME:$IMAGE_TAG
+    - docker push $IMAGE_NAME:$IMAGE_TAG
+  only:
+    - main
+
+deploy:
+  stage: deploy
+  before_script:
+    - eval $(ssh-agent -s)
+    - chmod 400 $SSH_KEY
+    - echo "$SSH_KEY"
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan 51.20.63.39 >> ~/.ssh/known_hosts
+  script:
+    - >
+      ssh -o StrictHostKeyChecking=no -i $SSH_KEY ubuntu@51.20.63.39 "
+      echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin &&
+      docker pull $IMAGE_NAME:$IMAGE_TAG &&
+      docker ps -q --filter ancestor=$IMAGE_NAME:$IMAGE_TAG | xargs -r docker stop && 
+      docker ps -a -q --filter ancestor=$IMAGE_NAME:$IMAGE_TAG | xargs -r docker rm &&
+      docker run --rm -e DATABASE_URL=postgresql://postgres:password@51.20.63.39/:5432/ist_journal_db -e NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME='$NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME' $IMAGE_NAME:$IMAGE_TAG npx prisma migrate deploy &&
+      docker run -d -p 4200:3000 -e DATABASE_URL=postgresql://postgres:password@51.20.63.39/:5432/ist_journal_db -e NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=dorqssw4i $IMAGE_NAME:$IMAGE_TAG"
+  only:
+    - main
