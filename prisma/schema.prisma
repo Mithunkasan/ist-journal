@@ -450,6 +450,14 @@ model RejectedJournal{
   @@index([updatedAt])
 }
 
+model UploadedFile {
+  id        String   @id @default(cuid())
+  filename  String
+  mimeType  String
+  data      String
+  createdAt DateTime @default(now())
+}
+
 
 
 
