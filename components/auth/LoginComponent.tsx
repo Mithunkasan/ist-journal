@@ -279,6 +279,12 @@ const LoginPage = () => {
                   }}
                 />
 
+                <Box sx={{ display: "flex", justifyContent: "flex-end", mt: -1 }}>
+                  <Link href="/forgot-password" style={{ textDecoration: "none", color: "#004b23", fontWeight: 600, fontSize: "0.875rem" }}>
+                    {lang === "ar" ? "هل نسيت كلمة المرور؟" : "Forgot Password?"}
+                  </Link>
+                </Box>
+
                 <Button 
                   fullWidth 
                   type="submit"

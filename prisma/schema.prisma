@@ -75,6 +75,8 @@ model User {
   updatedAt         DateTime  @default(now()) @updatedAt
   Status UserStatus?
   orcid             String?
+  resetOtp          String?
+  resetOtpExpires   DateTime?
   assignedJournals  AssignedJournals[] @relation(name: "AssignedJournals_User")
   reviewingJournals AssignedJournals[] @relation(name: "AssignedJournals_Reviewer")
   reviewedJournals  AssignedJournals[] @relation(name: "AssignedJournals_Reviewers")

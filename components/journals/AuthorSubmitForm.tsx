@@ -4,6 +4,7 @@ import React, { ChangeEvent, useMemo, useState } from "react";
 import {
   Button,
   Checkbox,
+  CircularProgress,
   FormControl,
   FormControlLabel,
   FormLabel,
@@ -26,13 +27,15 @@ import { useAppDispatch } from "@/lib/hooks/redux";
 import howToHearThis from "@/lib/howtoHearThis";
 import { keywordsFilter } from "@/lib/keywordsFilter";
 import { useLanguage } from "@/lib/LanguageContext";
-import { submitJournalPaper } from "@/redux/actions/journalActions";
+import { submitJournalPaper, updateSubmittedJournalPaper } from "@/redux/actions/journalActions";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 
 type AuthorSubmitFormProps = {
   onSubmitted?: (paper: any) => void;
   redirectAfterSubmit?: boolean;
   redirectPath?: string;
+  editPaperId?: string;
 };
 
 type AuthorDetail = {
@@ -238,6 +241,7 @@ const AuthorSubmitForm = ({
   onSubmitted,
   redirectAfterSubmit = true,
   redirectPath = "/author",
+  editPaperId,
 }: AuthorSubmitFormProps) => {
   const router = useRouter();
   const dispatch = useAppDispatch();
@@ -257,12 +261,76 @@ const AuthorSubmitForm = ({
     { name: "", email: "" },
   ]);
   const [correspondingAuthorIndex, setCorrespondingAuthorIndex] = useState(0);
+  const [loadingPaper, setLoadingPaper] = useState(false);
 
   React.useEffect(() => {
     if (typeof window !== "undefined") {
       setRequireOrcid(localStorage.getItem("ist-require-orcid") === "true");
     }
   }, []);
+
+  React.useEffect(() => {
+    if (!editPaperId) return;
+    const loadPaperData = async () => {
+      try {
+        setLoadingPaper(true);
+        const response = await axios.get("/api/author/papers");
+        const paper = response.data.find((p: any) => String(p.paperID) === editPaperId);
+        if (paper) {
+          setFormData({
+            submissionType: paper.type || "Research Paper",
+            paperTitle: paper.title || "",
+            abstract: paper.abstract || "",
+            primaryDomain: paper.primaryDomain || "",
+            secondaryDomain: paper.secondaryDomain || "",
+            country: paper.country || "",
+            authorName: "",
+            authorEmailId: "",
+            orcid: paper.orcid || "",
+            howToFindThis: paper.howToKnow || "",
+            checked: true,
+            category: paper.category || "AI / Computer Science",
+          });
+
+          // Parse authors
+          const names = paper.authorNames ? paper.authorNames.split(", ") : [];
+          const emails = paper.authorEmail ? paper.authorEmail.split(", ") : [];
+          const initialAuthors = names.map((name: string, i: number) => ({
+            name: name,
+            email: emails[i] || "",
+          }));
+          if (initialAuthors.length === 0) {
+            initialAuthors.push({ name: "", email: "" });
+          }
+          setAuthors(initialAuthors);
+
+          // Parse keywords
+          if (paper.keywords) {
+            setSelectedValue(paper.keywords.split(",").map((k: string) => k.trim()));
+          }
+
+          // File URLs
+          setUploadedFileUrl(paper.paperUrl || "");
+          if (paper.paperUrl) {
+            setSelectedFileName(paper.paperUrl.split("/").pop() || "Uploaded Manuscript");
+          }
+          setUploadedSupportingFileUrl(paper.supportingFilesUrl || "");
+          if (paper.supportingFilesUrl) {
+            setSupportingFileName(paper.supportingFilesUrl.split("/").pop() || "Uploaded Supporting Files");
+          }
+          setUploadedCoverLetterUrl(paper.coverLetterUrl || "");
+          if (paper.coverLetterUrl) {
+            setCoverLetterFileName(paper.coverLetterUrl.split("/").pop() || "Uploaded Cover Letter");
+          }
+        }
+      } catch (error) {
+        console.error("Error loading paper data for edit:", error);
+      } finally {
+        setLoadingPaper(false);
+      }
+    };
+    loadPaperData();
+  }, [editPaperId]);
 
   const paperId = useMemo(() => {
     const numericPart = parseInt(uuidv4().replace(/-/g, "").slice(0, 8), 16);
@@ -359,7 +427,7 @@ const AuthorSubmitForm = ({
       .filter(Boolean)
       .join(", ");
 
-    const journalData = {
+    const journalData: any = {
       type: formData.submissionType,
       title: formData.paperTitle,
       abstract: formData.abstract,
@@ -371,20 +439,26 @@ const AuthorSubmitForm = ({
       authorEmail: authorEmails,
       orcid: formData.orcid,
       howToKnow: formData.howToFindThis,
-      paperID: parseInt(paperId),
       keywords: selectedKeywords.toString(),
       category: formData.category,
       supportingFilesUrl,
       coverLetterUrl,
     };
 
-    const response = await dispatch(submitJournalPaper(journalData));
+    if (editPaperId) {
+      journalData.paperID = parseInt(editPaperId);
+      const response = await dispatch(updateSubmittedJournalPaper(parseInt(editPaperId), journalData));
+      return response;
+    } else {
+      journalData.paperID = parseInt(paperId);
+      const response = await dispatch(submitJournalPaper(journalData));
 
-    if (!response || typeof response !== "object" || !("id" in response)) {
-      throw new Error("Failed to save journal entry");
+      if (!response || typeof response !== "object" || !("id" in response)) {
+        throw new Error("Failed to save journal entry");
+      }
+
+      return response;
     }
-
-    return response;
   };
 
   const uploadPaperFile = async (file: File) => {
@@ -413,7 +487,7 @@ const AuthorSubmitForm = ({
     const hasTooManyKeywords = selectedKeywords.length > 5;
     const hasMissingUpload = !selectedFile && !uploadedFileUrl;
     const hasMissingAuthorName = authors.some((author) => !author.name.trim());
-    const hasMissingAuthorEmail = !authors[correspondingAuthorIndex]?.email.trim();
+    const hasMissingAuthorEmail = !authors[0]?.email.trim();
     const hasMissingRequiredField =
       !formData.paperTitle.trim() ||
       !formData.abstract.trim() ||
@@ -663,26 +737,31 @@ const AuthorSubmitForm = ({
           flexDirection: "column",
         }}
       >
-        <Box
-          component="form"
-          dir={dir}
-          onSubmit={handleSubmitPaper}
-          noValidate
-          sx={{ paddingTop: "10px", paddingInline: "50px" }}
-        >
-          <Typography
-            component="h2"
-            sx={{
-              color: "#004B23",
-              fontSize: "25px",
-              fontWeight: 700,
-              fontFamily: "inherit",
-              textAlign: "center",
-              marginBottom: "30px",
-            }}
+        {loadingPaper ? (
+          <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
+            <CircularProgress sx={{ color: "#004b23" }} />
+          </Box>
+        ) : (
+          <Box
+            component="form"
+            dir={dir}
+            onSubmit={handleSubmitPaper}
+            noValidate
+            sx={{ paddingTop: "10px", paddingInline: "50px" }}
           >
-            {copy.title}
-          </Typography>
+            <Typography
+              component="h2"
+              sx={{
+                color: "#004B23",
+                fontSize: "25px",
+                fontWeight: 700,
+                fontFamily: "inherit",
+                textAlign: "center",
+                marginBottom: "30px",
+              }}
+            >
+              {editPaperId ? (lang === "ar" ? "تحديث تفاصيل البحث" : "Update Paper Details") : copy.title}
+            </Typography>
 
           <FormControl
             sx={{
@@ -1275,7 +1354,7 @@ const AuthorSubmitForm = ({
                     dir={dir}
                     value={author.name}
                     className={singleLineFieldClassName(error.authorName && !author.name.trim())}
-                    placeholder={copy.authorNamesPlaceholder}
+                    placeholder={lang === "ar" ? `المؤلف ${index + 1}` : `Author ${index + 1}`}
                     onChange={(event) => updateAuthor(index, "name", event.target.value)}
                   />
                   {index > 0 && (
@@ -1321,7 +1400,7 @@ const AuthorSubmitForm = ({
                 textAlign: lang === "ar" ? "right" : "left",
               }}
             >
-              {copy.authorEmail} <span style={{ color: "red" }}>*</span>
+              {copy.authorEmail}
             </FormLabel>
             <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
               {authors.map((author, index) => (
@@ -1334,15 +1413,16 @@ const AuthorSubmitForm = ({
                     {correspondingAuthorIndex === index ? <StarIcon fontSize="small" /> : <StarBorderIcon fontSize="small" />}
                   </Box>
                   <input
-                    required={correspondingAuthorIndex === index}
+                    required={index === 0}
                     type="email"
                     name={`authorEmail-${index}`}
                     dir={dir}
                     value={author.email}
-                    className={singleLineFieldClassName(error.authorEmailId && correspondingAuthorIndex === index && !author.email.trim())}
+                    className={singleLineFieldClassName(error.authorEmailId && index === 0 && !author.email.trim())}
                     placeholder={copy.authorEmailPlaceholder}
                     onChange={(event) => updateAuthor(index, "email", event.target.value)}
                   />
+                  {index === 0 && <span style={{ color: "red" }}>*</span>}
                   {index > 0 && (
                     <Button
                       type="button"
@@ -1503,7 +1583,7 @@ const AuthorSubmitForm = ({
               },
             }}
           >
-            {isSubmitting ? copy.submitting : copy.submit}
+            {isSubmitting ? copy.submitting : (editPaperId ? (lang === "ar" ? "تحديث" : "Update") : copy.submit)}
           </Button>
           {submissionMessage && (
             <Typography
@@ -1525,6 +1605,7 @@ const AuthorSubmitForm = ({
             </Typography>
           )}
         </Box>
+        )}
       </Paper>
     </>
   );

@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { ensureUserProfile } from "@/lib/workflow";
 import { UserRole, UserStatus } from "@prisma/client";
+import { sendEmailNotification } from "@/lib/mail";
 
 const publicSelfRegisterRoles = new Set<UserRole>([
   UserRole.AUTHOR,
@@ -44,6 +45,19 @@ export async function POST(request: any) {
 
   if (!name || !email || !password || !role) {
     return new NextResponse("Missing Fields", { status: 400 });
+  }
+
+  if (password.length < 8) {
+    return new NextResponse("Password must be at least 8 characters long.", { status: 400 });
+  }
+  if (!/[A-Z]/.test(password)) {
+    return new NextResponse("Password must contain at least one uppercase letter (A-Z).", { status: 400 });
+  }
+  if (!/[0-9]/.test(password)) {
+    return new NextResponse("Password must contain at least one number (0-9).", { status: 400 });
+  }
+  if (!/[^A-Za-z0-9]/.test(password)) {
+    return new NextResponse("Password must contain at least one special character.", { status: 400 });
   }
 
   const requestedRole = String(role).toUpperCase() as UserRole;
@@ -89,6 +103,16 @@ export async function POST(request: any) {
 
   if (userStatus === UserStatus.ACTIVE) {
     await ensureUserProfile(user.id, allowedRole);
+  }
+
+  try {
+    await sendEmailNotification({
+      to: user.email!,
+      subject: "Welcome to IST Online Journal - Your Account Credentials",
+      body: `Hello ${name},\n\nWelcome to IST Online Journal! Your account has been registered successfully.\n\nHere are your login credentials:\nEmail: ${email}\nPassword: ${password}\n\nThank you,\nIST Online Journal Editorial Board`,
+    });
+  } catch (emailErr) {
+    console.error("Failed to send welcome email:", emailErr);
   }
 
   return NextResponse.json(user);

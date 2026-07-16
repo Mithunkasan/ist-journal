@@ -355,14 +355,66 @@ const JournalsTable = ({
     productionStep: data?.productionStep,
   }));
 
-  const columns: any = journals?.map((data: any) => ({
-    field: data,
-    headName: data,
-    cellClassName: data,
-    headerClassName: data,
-    align: "center",
-    headerAlign: "center",
-  }));
+  const getHeaderName = (field: string) => {
+    switch (field) {
+      case "paperID": return "Paper ID";
+      case "title": return "Title";
+      case "authorNames": return "Author Name(s)";
+      case "authorEmail": return "Author Email";
+      case "primaryDomain": return "Primary Domain";
+      case "secondaryDomain": return "Secondary Domain";
+      case "createdAt": return "Created At";
+      case "updatedAt": return "Updated At";
+      case "status": return "Status";
+      case "type": return "Type";
+      case "isSubmitted": return "Submitted";
+      case "isReviewerAssigned": return "Reviewer Assigned";
+      case "isEditable": return "Editable";
+      case "isAssigndToEditor": return "Assigned To Editor";
+      case "isPublished": return "Published";
+      case "isAssociatedEditorAssigned": return "Associate Editor Assigned";
+      case "associateEditor": return "Associate Editor";
+      case "editorName": return "Editor Name";
+      case "supportingFilesUrl": return "Supporting Files";
+      case "productionStep": return "Production Step";
+      case "doi": return "DOI";
+      default:
+        return field
+          .replace(/([A-Z])/g, " $1")
+          .replace(/^./, (str) => str.toUpperCase());
+    }
+  };
+
+  const columns: any = journals?.map((data: any) => {
+    const isTitle = data === "title";
+    const headerName = getHeaderName(data);
+    const calculatedWidth = Math.max(160, headerName.length * 9 + 40);
+    return {
+      field: data,
+      headerName: headerName,
+      cellClassName: data,
+      headerClassName: data,
+      align: isTitle ? "left" : "center",
+      headerAlign: "center",
+      width: isTitle ? 400 : calculatedWidth,
+      renderCell: isTitle
+        ? (params: any) => (
+            <div
+              style={{
+                whiteSpace: "normal",
+                wordBreak: "break-word",
+                lineHeight: "1.3",
+                textAlign: "left",
+                width: "100%",
+                padding: "8px 0",
+              }}
+            >
+              {params.value}
+            </div>
+          )
+        : undefined,
+    };
+  });
 
   const columnExists = (columns: any, field: any) => {
     return columns?.some((column: any) => column?.field === field);
@@ -387,7 +439,11 @@ const JournalsTable = ({
   };
 
   const updatePaper = (params: any) => {
-    router.push(`/associate-editor/dashboard/submissions/updateForm/${params.row.paperID}`);
+    if (titles === "under_process") {
+      router.push(`/author/update/${params.row.paperID}`);
+    } else {
+      router.push(`/associate-editor/dashboard/submissions/updateForm/${params.row.paperID}`);
+    }
     setFlag(true);
   };
 

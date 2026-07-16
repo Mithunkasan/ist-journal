@@ -28,6 +28,7 @@ const translations: Record<string, string> = {
   "nav.archive": "Archive", "nav.archive.ar": "الأرشيف",
   "nav.contact": "Contact", "nav.contact.ar": "اتصل بنا",
   "nav.signin": "Sign In", "nav.signin.ar": "تسجيل الدخول",
+  "nav.signup": "Sign Up", "nav.signup.ar": "إنشاء حساب",
   "nav.signout": "Sign Out", "nav.signout.ar": "تسجيل الخروج",
   "nav.admin": "Admin Dashboard", "nav.admin.ar": "لوحة الإدارة",
   "nav.editor": "Editor Dashboard", "nav.editor.ar": "لوحة المحرر",

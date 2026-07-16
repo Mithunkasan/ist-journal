@@ -1,5 +1,29 @@
 [
   {
+    "id": 1784212759475,
+    "timestamp": "2026-07-16T14:39:14.475Z",
+    "to": "rizwanmatt2002@gmail.com",
+    "subject": "Welcome to IST Online Journal - Your Account Credentials",
+    "body": "Hello Rizwan,\n\nWelcome to IST Online Journal! Your account has been registered successfully.\n\nHere are your login credentials:\nEmail: rizwanmatt2002@gmail.com\nPassword: 12345678\n\nThank you,\nIST Online Journal Editorial Board"
+  },
+  {
+    "id": 1784212457091,
+    "timestamp": "2026-07-16T14:34:09.541Z",
+    "to": "mithunkasanmatt@gmail.com",
+    "subject": "Your OTP for Password Reset",
+    "body": "Hello Mithun,\n\nWe received a request to reset your password.\nYour verification code (OTP) is: 628254\n\nThis code will expire in 15 minutes. If you did not request a password reset, please ignore this email.\n\nThank you,\nIST Online Journal Support"
+  },
+  {
+    "id": 1784208854389,
+    "timestamp": "2026-07-16T13:34:09.087Z",
+    "to": "mithunkasanmatt@gmail.com",
+    "subject": "[IST Journal] Manuscript Submitted Successfully",
+    "body": "Dear Jack,\n\nYour manuscript titled \"Science\" has been successfully submitted and is awaiting editorial initial screening.\n\nPaper ID: 464470905\nSubmission Date: 16/07/2026\n\nBest regards,\nEditorial Board",
+    "templateParams": {
+      "paperID": "464470905"
+    }
+  },
+  {
     "id": 1783690354666,
     "timestamp": "2026-07-10T13:32:29.254Z",
     "to": "mattadarsh@gmail.com",

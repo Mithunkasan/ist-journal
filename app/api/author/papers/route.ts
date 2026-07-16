@@ -46,6 +46,9 @@ export async function GET() {
           category: true,
           updatedAt: true,
           createdAt: true,
+          supportingFilesUrl: true,
+          coverLetterUrl: true,
+          orcid: true,
         },
       }),
       prisma.assignedJournals.findMany({
@@ -74,6 +77,9 @@ export async function GET() {
           category: true,
           updatedAt: true,
           createdAt: true,
+          supportingFilesUrl: true,
+          coverLetterUrl: true,
+          orcid: true,
         },
       }),
       prisma.published.findMany({
@@ -103,6 +109,8 @@ export async function GET() {
           issue: true,
           updatedAt: true,
           createdAt: true,
+          coverLetterUrl: true,
+          orcid: true,
         },
       }),
       prisma.rejectedJournal.findMany({
@@ -130,6 +138,7 @@ export async function GET() {
           rejectedReasons: true,
           updatedAt: true,
           createdAt: true,
+          coverLetterUrl: true,
         },
       }),
     ]);
