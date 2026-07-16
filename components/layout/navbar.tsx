@@ -52,6 +52,21 @@ const Navbar = () => {
     setLang(lang === "en" ? "ar" : "en");
   };
 
+  const [signUpAnchorEl, setSignUpAnchorEl] = React.useState<null | HTMLElement>(null);
+
+  const handleSignUpClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setSignUpAnchorEl(event.currentTarget);
+  };
+
+  const handleSignUpClose = () => {
+    setSignUpAnchorEl(null);
+  };
+
+  const handleSelectRole = (role: "AUTHOR" | "REVIEWER") => {
+    handleSignUpClose();
+    router.push(`/register?role=${role}`);
+  };
+
   return (
     <>
       <AppBar
@@ -207,12 +222,63 @@ const Navbar = () => {
                   {t("nav.signout")}
                 </button>
               ) : (
-                <button
-                  className="bg-[#004b23] text-[#fff] w-[100px] px-4 py-3 rounded-md font-medium hover:text-[#004b23] hover:bg-[#ffff] hover:border border-[#004b23] transition-all duration-200 ease-linear"
-                  onClick={handleLoginPage}
-                >
-                  {t("nav.signin")}
-                </button>
+                <>
+                  <button
+                    className="bg-transparent text-[#004b23] border border-[#004b23] w-[100px] px-4 py-3 rounded-md font-medium hover:bg-[#004b23] hover:text-[#fff] transition-all duration-200 ease-linear"
+                    onClick={handleLoginPage}
+                  >
+                    {t("nav.signin")}
+                  </button>
+                  <button
+                    id="signup-button"
+                    aria-controls={signUpAnchorEl ? 'signup-menu' : undefined}
+                    aria-haspopup="true"
+                    aria-expanded={signUpAnchorEl ? 'true' : undefined}
+                    onClick={handleSignUpClick}
+                    className="bg-[#004b23] text-[#fff] w-[100px] px-4 py-3 rounded-md font-medium hover:text-[#004b23] hover:bg-[#ffff] hover:border border-[#004b23] transition-all duration-200 ease-linear"
+                  >
+                    {t("nav.signup")}
+                  </button>
+                  <Menu
+                    id="signup-menu"
+                    anchorEl={signUpAnchorEl}
+                    open={Boolean(signUpAnchorEl)}
+                    onClose={handleSignUpClose}
+                    MenuListProps={{
+                      'aria-labelledby': 'signup-button',
+                    }}
+                    PaperProps={{
+                      elevation: 4,
+                      sx: {
+                        mt: 1,
+                        borderRadius: 2,
+                        minWidth: 150,
+                        boxShadow: '0px 8px 24px rgba(0, 75, 35, 0.15)',
+                        border: '1px solid rgba(0, 75, 35, 0.08)',
+                        '& .MuiMenuItem-root': {
+                          fontSize: '0.95rem',
+                          fontWeight: 500,
+                          color: '#004b23',
+                          padding: '10px 16px',
+                          transition: 'all 0.15s ease',
+                          '&:hover': {
+                            backgroundColor: 'rgba(0, 75, 35, 0.08)',
+                            color: '#004b23',
+                          },
+                        },
+                      },
+                    }}
+                    transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                    anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                  >
+                    <MenuItem onClick={() => handleSelectRole("AUTHOR")}>
+                      {lang === "ar" ? "مؤلف (Author)" : "Author"}
+                    </MenuItem>
+                    <MenuItem onClick={() => handleSelectRole("REVIEWER")}>
+                      {lang === "ar" ? "مراجِع (Reviewer)" : "Reviewer"}
+                    </MenuItem>
+                  </Menu>
+                </>
               )}
             </Box>
           </Toolbar>

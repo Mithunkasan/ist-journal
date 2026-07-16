@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, ChangeEvent, Suspense } from "react";
+import { useState, ChangeEvent, Suspense, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
@@ -53,10 +53,11 @@ const RegisterPageContent = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const requestedRole = searchParams.get("role") === "AUTHOR" ? "AUTHOR" : "";
+  const [emailError, setEmailError] = useState("");
+  const queryRole = searchParams.get("role");
+  const requestedRole = (queryRole === "AUTHOR" || queryRole === "REVIEWER") ? queryRole : "";
   const callbackUrl = searchParams.get("callbackUrl");
   const shouldAutoLogin = searchParams.get("autoLogin") === "1" && requestedRole === "AUTHOR";
-  
   const roles = [
     { value: "AUTHOR", label: lang === "ar" ? "مؤلف" : "Author" },
     { value: "REVIEWER", label: lang === "ar" ? "مراجِع" : "Reviewer" },
@@ -78,10 +79,52 @@ const RegisterPageContent = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  useEffect(() => {
+    if (!formData.email) {
+      setEmailError("");
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setEmailError("");
+      return;
+    }
+
+    const checkEmail = setTimeout(async () => {
+      try {
+        const res = await fetch("/api/check-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: formData.email }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.exists) {
+            setEmailError(
+              lang === "ar"
+                ? "هذا البريد الإلكتروني مسجل بالفعل. يرجى استخدام بريد إلكتروني آخر."
+                : "This email is already registered. Please use a different email."
+            );
+          } else {
+            setEmailError("");
+          }
+        }
+      } catch (err) {
+        console.error("Failed to check email:", err);
+      }
+    }, 400);
+
+    return () => clearTimeout(checkEmail);
+  }, [formData.email, lang]);
+
   const handleNext = () => {
     if (activeStep === 0) {
       if (!formData.fullName || !formData.email || !formData.password) {
         setError(lang === "ar" ? "يرجى ملء جميع المعلومات الأساسية" : "Please fill in all basic information");
+        return;
+      }
+      if (emailError) {
+        setError(emailError);
         return;
       }
       if (formData.password !== formData.confirmPassword) {
@@ -90,6 +133,24 @@ const RegisterPageContent = () => {
       }
       if (formData.password.length < 8) {
         setError(lang === "ar" ? "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل" : "Password must be at least 8 characters");
+        return;
+      }
+      if (!/[A-Z]/.test(formData.password)) {
+        setError(lang === "ar" 
+          ? "يجب أن تحتوي كلمة المرور على حرف كبير واحد على الأقل (A–Z)" 
+          : "Password must contain at least one uppercase letter (A–Z)");
+        return;
+      }
+      if (!/[0-9]/.test(formData.password)) {
+        setError(lang === "ar" 
+          ? "يجب أن تحتوي كلمة المرور على رقم واحد على الأقل (0–9)" 
+          : "Password must contain at least one number (0–9)");
+        return;
+      }
+      if (!/[^A-Za-z0-9]/.test(formData.password)) {
+        setError(lang === "ar" 
+          ? "يجب أن تحتوي كلمة المرور على رمز خاص واحد على الأقل (مثل @، #، $، إلخ)" 
+          : "Password must contain at least one special character (e.g., @, #, $, %, etc.)");
         return;
       }
     }
@@ -251,6 +312,8 @@ const RegisterPageContent = () => {
                       required
                       value={formData.email}
                       onChange={handleInputChange}
+                      error={!!emailError}
+                      helperText={emailError}
                       InputProps={{
                         startAdornment: <InputAdornment position="start"><Email color="action" /></InputAdornment>,
                         sx: { borderRadius: 2 }
@@ -303,7 +366,6 @@ const RegisterPageContent = () => {
                 </Grid>
               ) : (
                 <Grid container spacing={3}>
-                  {!requestedRole && (
                   <Grid item xs={12}>
                     <TextField
                       fullWidth
@@ -312,6 +374,7 @@ const RegisterPageContent = () => {
                       name="role"
                       value={formData.role}
                       onChange={handleInputChange}
+                      disabled={!!requestedRole}
                       InputProps={{ sx: { borderRadius: 2 } }}
                     >
                       {roles.map((option) => (
@@ -321,7 +384,6 @@ const RegisterPageContent = () => {
                       ))}
                     </TextField>
                   </Grid>
-                  )}
                   <Grid item xs={12}>
                     <TextField
                       fullWidth

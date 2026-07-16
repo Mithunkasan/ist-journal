@@ -1,5 +1,4 @@
 import prisma from "@/lib/prisma";
-import { NextApiResponse } from "next";
 import { NextResponse } from "next/server";
 
 export async function PATCH(
@@ -16,7 +15,7 @@ export async function PATCH(
 
     if (!existingJournal) {
       console.error("Journal not found in update-submited-paper");
-      return new NextResponse("Journal not found in update-submited-pape", {
+      return new NextResponse("Journal not found in update-submited-paper", {
         status: 404,
       });
     }
@@ -27,6 +26,21 @@ export async function PATCH(
         ...body.data,
       },
     });
+
+    // Also update in AssignedJournals if it has been assigned
+    const existingAssigned = await prisma.assignedJournals.findFirst({
+      where: { paperID: paperID },
+    });
+
+    if (existingAssigned) {
+      await prisma.assignedJournals.update({
+        where: { id: existingAssigned.id },
+        data: {
+          ...body.data,
+        },
+      });
+    }
+
     return NextResponse.json(updatedJournal);
   } catch (error) {
     console.error(
