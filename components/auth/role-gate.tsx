@@ -8,10 +8,11 @@ import { Container } from "@mui/material";
 
 interface RoleGateProps {
   children: React.ReactNode;
-  allowedRole: UserRole;
+  allowedRole?: UserRole;
+  allowedRoles?: UserRole[];
 }
 
-export const RoleGate = ({ children, allowedRole }: RoleGateProps) => {
+export const RoleGate = ({ children, allowedRole, allowedRoles }: RoleGateProps) => {
   const router = useRouter();
 
   const role = useCurrentRole();
@@ -20,7 +21,9 @@ export const RoleGate = ({ children, allowedRole }: RoleGateProps) => {
     router.back();
   };
 
-  if (role !== allowedRole) {
+  const hasAccess = role && (allowedRoles ? allowedRoles.includes(role) : role === allowedRole);
+
+  if (!hasAccess) {
     return (
       <Container
         sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}

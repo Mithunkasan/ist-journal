@@ -35,7 +35,9 @@ const menuItems = [
   { textKey: "sb.assignreviewers", icon: <AssignmentInd />, href: "/editor/assign" },
   { textKey: "sb.decisions", icon: <FactCheck />, href: "/editor/decisions" },
   { textKey: "sb.publish", icon: <CloudUpload />, href: "/editor/publish" },
-  { textKey: "sb.associates", icon: <PeopleAlt />, href: "/editor/associates" },
+  { textKey: "sb.reviewers", icon: <PeopleAlt />, href: "/editor/reviewers" },
+  { textKey: "sb.subeditors", icon: <PeopleAlt />, href: "/editor/sub-editors" },
+  { textKey: "sb.guesteditors", icon: <PeopleAlt />, href: "/editor/guest-editors" },
   { textKey: "sb.pendingreviewers", icon: <HowToReg />, href: "/editor/pending-reviewers" },
   { textKey: "sb.settings", icon: <Settings />, href: "/editor/settings" },
 ];

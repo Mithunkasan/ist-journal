@@ -5,6 +5,7 @@ const { auth } = NextAuth(authConfig);
 import {
   DEFAULT_ADMIN_REDIRECT,
   DEFAULT_ASSOCIATE_EDITOR_REDIRECT,
+  DEFAULT_GUEST_EDITOR_REDIRECT,
   DEFAULT_EDITOR_REDIRECT,
   DEFAULT_LOGIN_REDIRECT,
   DEFAULT_REVIEWER_REDIRECT,
@@ -17,6 +18,7 @@ import {
   publicRoutes,
   reviewerRoutes,
   associateEditorRoutes,
+  guestEditorRoutes,
 } from "@/routes";
 
 // export default auth(async (req) => {
@@ -74,6 +76,7 @@ export default auth(async (req) => {
   const isEditorPath = nextUrl.pathname.startsWith("/editor");
   const isReviewerPath = nextUrl.pathname.startsWith("/reviewer");
   const isAssociateEditorPath = nextUrl.pathname.startsWith("/associate-editor");
+  const isGuestEditorPath = nextUrl.pathname.startsWith("/guest-editor");
 
   // API Authentication routes and callbacks bypass
   if (isApiAuthRoute || isAuthCallback) {
@@ -92,10 +95,12 @@ export default auth(async (req) => {
           return Response.redirect(new URL(DEFAULT_EDITOR_REDIRECT, nextUrl));
         case "REVIEWER":
           return Response.redirect(new URL(DEFAULT_REVIEWER_REDIRECT, nextUrl));
-          case "AUTHOR":
-            return Response.redirect(new URL(DEFAULT_AUTHOR_REDIRECT, nextUrl));
+        case "AUTHOR":
+          return Response.redirect(new URL(DEFAULT_AUTHOR_REDIRECT, nextUrl));
         case "ASSOCIATE_EDITOR":
           return Response.redirect(new URL(DEFAULT_ASSOCIATE_EDITOR_REDIRECT, nextUrl));
+        case "GUEST_EDITOR":
+          return Response.redirect(new URL(DEFAULT_GUEST_EDITOR_REDIRECT, nextUrl));
         default:
           return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl)); 
       }
@@ -134,6 +139,10 @@ export default auth(async (req) => {
     }
     
     if (isAssociateEditorPath && userRole !== "ASSOCIATE_EDITOR") {
+      return Response.redirect(new URL("/unauthorized", nextUrl));
+    }
+
+    if (isGuestEditorPath && userRole !== "GUEST_EDITOR") {
       return Response.redirect(new URL("/unauthorized", nextUrl));
     }
   }

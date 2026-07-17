@@ -119,11 +119,12 @@ const EditorRegister = ({ fixedRole, title }: EditorRegisterProps) => {
         });
         // router.push("/login");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("API request error:", error);
+      const errorMessage = error?.response?.data || "Something went wrong!";
       Toast.fire({
         icon: "error",
-        title: "Something went wrong!",
+        title: typeof errorMessage === "string" ? errorMessage : "Something went wrong!",
       });
     }
   };

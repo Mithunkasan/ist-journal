@@ -21,6 +21,14 @@ export async function POST(
   try {
     const paperID = parseInt(id);
 
+    // Clear selectedPaperId for the Associate Editor upon completing screening check
+    if (session.user.role === "ASSOCIATE_EDITOR") {
+      await prisma.user.update({
+        where: { id: session.user.id },
+        data: { selectedPaperId: null }
+      });
+    }
+
     // Fetch the existing paper to get author name and email
     const paper = await prisma.submittedJournals.findFirst({
       where: { paperID }

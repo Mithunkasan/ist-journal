@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 export async function GET() {
   const session = await auth();
 
-  if (!session?.user?.id || session.user.role !== "EDITOR") {
+  if (!session?.user?.id || (session.user.role !== "EDITOR" && session.user.role !== "ASSOCIATE_EDITOR")) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
 
@@ -137,9 +137,22 @@ export async function GET() {
       });
     });
 
-    const papers = Array.from(papersByPaperId.values()).sort(
-      (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-    );
+    const subEditors = await prisma.user.findMany({
+      where: { role: "ASSOCIATE_EDITOR" },
+      select: { name: true }
+    });
+    const subEditorNames = new Set(subEditors.map(u => u.name).filter(Boolean));
+
+    const papers = Array.from(papersByPaperId.values())
+      .filter((paper: any) => {
+        if (paper.associateEditor && subEditorNames.has(paper.associateEditor)) {
+          return false;
+        }
+        return true;
+      })
+      .sort(
+        (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+      );
 
     return NextResponse.json(papers);
   } catch (error) {

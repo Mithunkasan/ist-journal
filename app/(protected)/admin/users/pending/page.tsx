@@ -57,7 +57,7 @@ const PendingUsersPage = () => {
   };
 
   return (
-    <RoleGate allowedRole={UserRole.EDITOR}>
+    <RoleGate allowedRole={UserRole.ADMIN}>
       <Container sx={{ marginBlock: "20px" }}>
         <button
           className="bg-[#004b23] text-[#fff] w-[150px] mt-7 px-4 py-3 font-[inherit] rounded-md font-medium hover:text-[#004b23] hover:bg-[#ffff] hover:font-bold hover:border border-[#004b23] transition-all duration-200 ease-linear flex gap-2 items-center justify-center"

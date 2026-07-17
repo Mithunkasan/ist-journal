@@ -6,11 +6,17 @@ import { sendEmailNotification } from "@/lib/mail";
 export async function POST(request: Request) {
   const session = await auth();
 
-  if (!session?.user?.id || session.user.role !== "ASSOCIATE_EDITOR") {
+  if (!session?.user?.id || (session.user.role !== "ASSOCIATE_EDITOR" && session.user.role !== "GUEST_EDITOR")) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
 
   try {
+    // Clear selectedPaperId for the Associate Editor upon completing recommendation
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: { selectedPaperId: null }
+    });
+
     const body = await request.json();
     const { paperID, recommendation, comments } = body;
 

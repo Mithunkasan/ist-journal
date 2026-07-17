@@ -42,6 +42,7 @@ export const DEFAULT_LOGIN_REDIRECT = "/dashboard";
 export const DEFAULT_ADMIN_REDIRECT = "/admin/dashboard";
 export const DEFAULT_EDITOR_REDIRECT = "/editor";
 export const DEFAULT_ASSOCIATE_EDITOR_REDIRECT = "/associate-editor/dashboard";
+export const DEFAULT_GUEST_EDITOR_REDIRECT = "/guest-editor/dashboard";
 export const DEFAULT_REVIEWER_REDIRECT = "/reviewer";
 export const DEFAULT_AUTHOR_REDIRECT="/author";
 
@@ -55,3 +56,4 @@ export const authorRoutes=["/author","/author/dashboard"];
 export const editorRoutes = ["/editor", "/editor/dashboard"];
 export const reviewerRoutes = ["/reviewer", "/reviewer/dashboard"];
 export const associateEditorRoutes = ["/associate-editor", "/associate-editor/dashboard"];
+export const guestEditorRoutes = ["/guest-editor", "/guest-editor/dashboard"];

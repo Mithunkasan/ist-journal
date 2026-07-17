@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useState, useMemo } from "react";
-import { Box, Typography, Paper, Grid, CircularProgress } from "@mui/material";
+import { Box, Typography, Paper, Grid, CircularProgress, Button } from "@mui/material";
 import { 
   AssignmentInd, 
   LibraryBooks, 
@@ -13,6 +13,7 @@ import dynamic from "next/dynamic";
 import axios from "axios";
 import { useAppDispatch } from "@/lib/hooks/redux";
 import { onGetAllReviewer } from "@/redux/actions/journalActions";
+import { useRouter } from "next/navigation";
 
 const JournalsTable = dynamic(() => import("@/components/ui/tables/JournalsTable"), {
   ssr: false,
@@ -24,6 +25,7 @@ const JournalsTable = dynamic(() => import("@/components/ui/tables/JournalsTable
 });
 
 const EditorDashboard = () => {
+  const router = useRouter();
   const [papers, setPapers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [flag, setFlag] = useState(false);
@@ -64,10 +66,33 @@ const EditorDashboard = () => {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2, mb: 4 }}>
         <Typography variant="h4" sx={{ fontWeight: 800, color: '#004b23' }}>
           Editor-in-Chief Dashboard
         </Typography>
+        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+          <Button
+            variant="contained"
+            onClick={() => router.push("/editor/guest-editor-register?role=guest_editor")}
+            sx={{ bgcolor: '#004b23', '&:hover': { bgcolor: '#003318' }, borderRadius: 2 }}
+          >
+            Add Guest Editor
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => router.push("/editor/associate-register")}
+            sx={{ bgcolor: '#004b23', '&:hover': { bgcolor: '#003318' }, borderRadius: 2 }}
+          >
+            Add Sub Editor
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => router.push("/editor/reviewerregister")}
+            sx={{ bgcolor: '#004b23', '&:hover': { bgcolor: '#003318' }, borderRadius: 2 }}
+          >
+            Add Reviewer
+          </Button>
+        </Box>
       </Box>
 
       <Grid container spacing={3} sx={{ mb: 4 }}>
