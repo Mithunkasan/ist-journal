@@ -10,13 +10,24 @@ export async function GET() {
   }
 
   try {
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { selectedPaperId: true }
+    });
+
+    const whereClause: any = {
+      status: "UNDER_EDITOR_REVIEW",
+      associateEditor: session.user.name,
+    };
+
+    if (user?.selectedPaperId) {
+      whereClause.paperID = user.selectedPaperId;
+    }
+
     // Fetch all submitted journals that haven't been assigned to an editor yet
     // This serves as the queue for initial screening
     const papers = await prisma.submittedJournals.findMany({
-      where: {
-        status: "UNDER_EDITOR_REVIEW",
-        associateEditor: session.user.name,
-      },
+      where: whereClause,
       orderBy: {
         createdAt: 'desc',
       },

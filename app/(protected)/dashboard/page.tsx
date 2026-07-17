@@ -5,6 +5,7 @@ import {
   DEFAULT_AUTHOR_REDIRECT,
   DEFAULT_EDITOR_REDIRECT,
   DEFAULT_REVIEWER_REDIRECT,
+  DEFAULT_GUEST_EDITOR_REDIRECT,
 } from "@/routes";
 import { redirect } from "next/navigation";
 
@@ -18,6 +19,8 @@ export default async function DashboardRedirectPage() {
       redirect(DEFAULT_EDITOR_REDIRECT);
     case "ASSOCIATE_EDITOR":
       redirect(DEFAULT_ASSOCIATE_EDITOR_REDIRECT);
+    case "GUEST_EDITOR":
+      redirect(DEFAULT_GUEST_EDITOR_REDIRECT);
     case "REVIEWER":
       redirect(DEFAULT_REVIEWER_REDIRECT);
     case "AUTHOR":

@@ -10,13 +10,24 @@ export async function GET() {
   }
 
   try {
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { selectedPaperId: true }
+    });
+
+    const whereClause: any = {
+      associateEditor: session.user.name,
+      NOT: {
+        status: "UNDER_EDITOR_REVIEW"
+      }
+    };
+
+    if (user?.selectedPaperId) {
+      whereClause.paperID = user.selectedPaperId;
+    }
+
     const papers = await prisma.assignedJournals.findMany({
-      where: {
-        associateEditor: session.user.name,
-        NOT: {
-          status: "UNDER_EDITOR_REVIEW"
-        }
-      },
+      where: whereClause,
       select: {
         id: true,
         paperID: true,

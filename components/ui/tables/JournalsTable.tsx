@@ -6,6 +6,7 @@ import {
   IconButton,
   Tooltip,
   Typography,
+  Chip,
 } from "@mui/material";
 import {
   DataGrid,
@@ -24,6 +25,7 @@ import {
 import ViewPaper from "@/components/admin/viewPaper";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import axios from "axios";
 import MultipleSelect from "@/components/components/MultipleSelect";
 import { SaveButton } from "@/components/components/saveButton";
 import ModeEditOutlineIcon from "@mui/icons-material/ModeEditOutline";
@@ -101,6 +103,48 @@ const JournalsTable = ({
   const [selectedAEs, setSelectedAEs] = useState<any>({});
   const [deadlines, setDeadlines] = useState<any>({});
   const [invitingStates, setInvitingStates] = useState<any>({});
+  const [selectedPaperId, setSelectedPaperId] = useState<number | null>(null);
+  const [assignees, setAssignees] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchSelection = async () => {
+      if (session.data?.user?.role === "ASSOCIATE_EDITOR" || session.data?.user?.role === "GUEST_EDITOR") {
+        try {
+          const res = await axios.get("/api/associate-editor/get-selection");
+          setSelectedPaperId(res.data?.selectedPaperId || null);
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    };
+    fetchSelection();
+  }, [session.data, flag]);
+
+  useEffect(() => {
+    const fetchAssignees = async () => {
+      if (session.data?.user?.role === "EDITOR" || session.data?.user?.role === "ASSOCIATE_EDITOR") {
+        try {
+          const [aeRes, revRes, geRes, edRes] = await Promise.all([
+            axios.get("/api/get-associate"),
+            axios.get("/api/get-reviewer"),
+            axios.get("/api/get-guest-editor"),
+            axios.get("/api/get-editor")
+          ]);
+          
+          const combined = [
+            ...aeRes.data.map((u: any) => ({ ...u, roleLabel: "Sub Editor" })),
+            ...revRes.data.map((u: any) => ({ ...u, roleLabel: "Reviewer" })),
+            ...geRes.data.map((u: any) => ({ ...u, roleLabel: "Guest Editor" })),
+            ...edRes.data.map((u: any) => ({ ...u, roleLabel: "Editor" }))
+          ];
+          setAssignees(combined);
+        } catch (err) {
+          console.error("Failed to fetch assignees", err);
+        }
+      }
+    };
+    fetchAssignees();
+  }, [session.data, flag]);
 
   const reviewersData = useSelector(
     (state: any) => state?.reviewerSlice?.value?.reviewerData
@@ -649,32 +693,97 @@ const JournalsTable = ({
 
   if (titles === "Associate_Screening") {
     columns.push({
+      field: "Ownership Selection",
+      headerName: "Ownership",
+      headerAlign: "center",
+      width: 220,
+      renderCell: (params: any) => {
+        const paperID = params.row.paperID;
+        const isSelected = selectedPaperId === paperID;
+
+        if (selectedPaperId === null) {
+          return (
+            <Button
+              variant="contained"
+              size="small"
+              onClick={async () => {
+                try {
+                  const res = await axios.post("/api/associate-editor/take-ownership", {
+                    paperID
+                  });
+                  if (res.data?.success) {
+                    Swal.fire({
+                      icon: "success",
+                      title: "Ownership Taken",
+                      text: "You have selected this paper for review. Other papers are now hidden.",
+                      confirmButtonColor: "#004b23"
+                    });
+                    setFlag((prev: any) => !prev);
+                  }
+                } catch (err) {
+                  console.error(err);
+                }
+              }}
+              sx={{
+                bgcolor: "#0284c7",
+                '&:hover': { bgcolor: "#0369a1" },
+                borderRadius: "6px",
+                textTransform: "none",
+                fontWeight: 600,
+                color: "#fff"
+              }}
+            >
+              Select / Take Ownership
+            </Button>
+          );
+        } else if (isSelected) {
+          return (
+            <Chip 
+              label="Active Assignment" 
+              color="primary" 
+              size="small" 
+              sx={{ fontWeight: 600 }}
+            />
+          );
+        } else {
+          return <Typography variant="body2" color="textSecondary">Locked</Typography>;
+        }
+      }
+    });
+
+    columns.push({
       field: "Screening Action",
       headerName: "Screening Action",
       headerAlign: "center",
       width: 220,
-      renderCell: (params: any) => (
-        <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-          <Button 
-            variant="contained" 
-            size="small" 
-            color="success"
-            onClick={() => {
-              setSelectedScreeningPaper(params.row);
-              setIsScreeningOpen(true);
-            }}
-            sx={{
-              bgcolor: "#004b23",
-              '&:hover': { bgcolor: "#003d1c" },
-              borderRadius: "6px",
-              textTransform: "none",
-              fontWeight: 600
-            }}
-          >
-            Perform Screening Check
-          </Button>
-        </Box>
-      )
+      renderCell: (params: any) => {
+        const paperID = params.row.paperID;
+        const isSelected = selectedPaperId === paperID;
+
+        return (
+          <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+            <Button 
+              variant="contained" 
+              size="small" 
+              color="success"
+              disabled={!isSelected}
+              onClick={() => {
+                setSelectedScreeningPaper(params.row);
+                setIsScreeningOpen(true);
+              }}
+              sx={{
+                bgcolor: isSelected ? "#004b23" : "#ccc",
+                '&:hover': { bgcolor: isSelected ? "#003d1c" : "#ccc" },
+                borderRadius: "6px",
+                textTransform: "none",
+                fontWeight: 600
+              }}
+            >
+              Perform Screening Check
+            </Button>
+          </Box>
+        );
+      }
     });
   }
 
@@ -752,9 +861,9 @@ const JournalsTable = ({
                       }
                     })
                   });
-
+ 
                   // Trigger a simulated notification email
-                  const matchedAE = associate_name?.find((ae: any) => ae.name === selectedValue);
+                  const matchedAE = assignees?.find((ae: any) => ae.name === selectedValue);
                   if (matchedAE && matchedAE.email) {
                     await fetch('/api/editor/notify-ae', {
                       method: 'POST',
@@ -768,7 +877,7 @@ const JournalsTable = ({
                       })
                     });
                   }
-
+ 
                   Swal.fire({
                     icon: "success",
                     title: "Associate Editor Assigned",
@@ -796,16 +905,23 @@ const JournalsTable = ({
             }}
           >
             <option value="">Select Associate Editor</option>
-            {associate_name?.map((ae: any) => {
-              const isMatch = ae.areaOfExpertise && paperCategory && 
-                (ae.areaOfExpertise.toLowerCase().includes(paperCategory.toLowerCase()) ||
-                 paperCategory.toLowerCase().includes(ae.areaOfExpertise.toLowerCase()));
-              return (
-                <option key={ae.id} value={ae.name}>
-                  {ae.name} {ae.areaOfExpertise ? `(${ae.areaOfExpertise})` : ""} {isMatch ? "⭐ Match" : ""}
-                </option>
-              );
-            })}
+            {assignees
+              ?.filter((ae: any) => {
+                if (session.data?.user?.role === "ASSOCIATE_EDITOR") {
+                  return ae.roleLabel === "Guest Editor" || ae.email === session.data?.user?.email;
+                }
+                return true;
+              })
+              ?.map((ae: any) => {
+                const isMatch = ae.areaOfExpertise && paperCategory && 
+                  (ae.areaOfExpertise.toLowerCase().includes(paperCategory.toLowerCase()) ||
+                   paperCategory.toLowerCase().includes(ae.areaOfExpertise.toLowerCase()));
+                return (
+                  <option key={ae.id} value={ae.name}>
+                    {ae.name} ({ae.roleLabel}) {ae.areaOfExpertise ? `(${ae.areaOfExpertise})` : ""} {isMatch ? "⭐ Match" : ""}
+                  </option>
+                );
+              })}
           </select>
         );
       }
@@ -813,128 +929,193 @@ const JournalsTable = ({
   }
 
   if (titles === "AE_Track_Queue") {
-    columns.push({
-      field: "Select Reviewers",
-      headerName: "Select Reviewers",
-      headerAlign: "center",
-      width: 250,
-      renderCell: (params: any) => (
-        <MultipleSelect
-          params={params}
-          reviewer={setReviewerNames}
-          reviewerNames={reviewerNames}
-        />
-      ),
-    });
+    const isSubEditor = session.data?.user?.role === "ASSOCIATE_EDITOR" || session.data?.user?.role === "GUEST_EDITOR";
 
-    columns.push({
-      field: "Review Deadline",
-      headerName: "Review Deadline",
-      headerAlign: "center",
-      width: 160,
-      renderCell: (params: any) => {
-        const today = new Date().toISOString().split("T")[0];
-        return (
-          <input
-            type="date"
-            min={today}
-            value={deadlines[params.row.paperID] || ""}
-            onChange={(e) => {
-              setDeadlines((prev: any) => ({ ...prev, [params.row.paperID]: e.target.value }));
-            }}
-            style={{
-              padding: "8px",
-              borderRadius: "6px",
-              border: "1px solid #ccc",
-              outline: "none",
-              fontSize: "13px",
-              width: "85%"
-            }}
+    if (isSubEditor) {
+      columns.push({
+        field: "Ownership Selection",
+        headerName: "Ownership",
+        headerAlign: "center",
+        width: 220,
+        renderCell: (params: any) => {
+          const paperID = params.row.paperID;
+          const isSelected = selectedPaperId === paperID;
+
+          if (selectedPaperId === null) {
+            return (
+              <Button
+                variant="contained"
+                size="small"
+                onClick={async () => {
+                  try {
+                    const res = await axios.post("/api/associate-editor/take-ownership", {
+                      paperID
+                    });
+                    if (res.data?.success) {
+                      Swal.fire({
+                        icon: "success",
+                        title: "Ownership Taken",
+                        text: "You have selected this paper for review. Other papers are now hidden.",
+                        confirmButtonColor: "#004b23"
+                      });
+                      setFlag((prev: any) => !prev);
+                    }
+                  } catch (err) {
+                    console.error(err);
+                  }
+                }}
+                sx={{
+                  bgcolor: "#0284c7",
+                  '&:hover': { bgcolor: "#0369a1" },
+                  borderRadius: "6px",
+                  textTransform: "none",
+                  fontWeight: 600,
+                  color: "#fff"
+                }}
+              >
+                Select / Take Ownership
+              </Button>
+            );
+          } else if (isSelected) {
+            return (
+              <Chip 
+                label="Active Assignment" 
+                color="primary" 
+                size="small" 
+                sx={{ fontWeight: 600 }}
+              />
+            );
+          } else {
+            return <Typography variant="body2" color="textSecondary">Locked</Typography>;
+          }
+        }
+      });
+    }
+
+    if (!isSubEditor) {
+      columns.push({
+        field: "Select Reviewers",
+        headerName: "Select Reviewers",
+        headerAlign: "center",
+        width: 250,
+        renderCell: (params: any) => (
+          <MultipleSelect
+            params={params}
+            reviewer={setReviewerNames}
+            reviewerNames={reviewerNames}
           />
-        );
-      }
-    });
+        ),
+      });
 
-    columns.push({
-      field: "Invite Action",
-      headerName: "Action",
-      headerAlign: "center",
-      width: 140,
-      renderCell: (params: any) => {
-        const paperID = params.row.paperID;
-        const selected = reviewerNames[paperID] || [];
-        const isInviting = invitingStates[paperID] || false;
-        
-        return (
-          <Button
-            variant="contained"
-            size="small"
-            disabled={selected.length === 0 || isInviting}
-            onClick={async () => {
-              if (selected.length === 0) {
-                Swal.fire({
-                  icon: "warning",
-                  title: "Selection Alert",
-                  text: "Please select at least one reviewer to proceed.",
-                  confirmButtonColor: "#004b23"
-                });
-                return;
-              }
+      columns.push({
+        field: "Review Deadline",
+        headerName: "Review Deadline",
+        headerAlign: "center",
+        width: 160,
+        renderCell: (params: any) => {
+          const today = new Date().toISOString().split("T")[0];
+          return (
+            <input
+              type="date"
+              min={today}
+              value={deadlines[params.row.paperID] || ""}
+              onChange={(e) => {
+                setDeadlines((prev: any) => ({ ...prev, [params.row.paperID]: e.target.value }));
+              }}
+              style={{
+                padding: "8px",
+                borderRadius: "6px",
+                border: "1px solid #ccc",
+                outline: "none",
+                fontSize: "13px",
+                width: "85%"
+              }}
+            />
+          );
+        }
+      });
 
-              setInvitingStates((prev: any) => ({ ...prev, [paperID]: true }));
-              
-              try {
-                const mappedReviewers = selected.map((name: string) => {
-                  const revObj = reviewersData?.find((r: any) => r.name === name);
-                  return { id: revObj?.id, name: name };
-                });
-
-                const response = await fetch("/api/associate-editor/invite-reviewers", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    paperID: paperID,
-                    paperTitle: params.row.title,
-                    reviewers: mappedReviewers,
-                    deadline: deadlines[paperID] || null
-                  })
-                });
-
-                if (response.ok) {
+      columns.push({
+        field: "Invite Action",
+        headerName: "Action",
+        headerAlign: "center",
+        width: 140,
+        renderCell: (params: any) => {
+          const paperID = params.row.paperID;
+          const selected = reviewerNames[paperID] || [];
+          const isInviting = invitingStates[paperID] || false;
+          
+          return (
+            <Button
+              variant="contained"
+              size="small"
+              disabled={selected.length === 0 || isInviting}
+              onClick={async () => {
+                if (selected.length === 0) {
                   Swal.fire({
-                    icon: "success",
-                    title: "Invitations Sent",
-                    text: "Peer review invitations have been dispatched successfully.",
+                    icon: "warning",
+                    title: "Selection Alert",
+                    text: "Please select at least one reviewer to proceed.",
                     confirmButtonColor: "#004b23"
                   });
-                  setFlag((prev: boolean) => !prev);
-                } else {
-                  throw new Error("Failed to invite reviewers");
+                  return;
                 }
-              } catch (err) {
-                console.error(err);
-                Swal.fire({
-                  icon: "error",
-                  title: "Failed",
-                  text: "An error occurred while sending review invitations."
-                });
-              } finally {
-                setInvitingStates((prev: any) => ({ ...prev, [paperID]: false }));
-              }
-            }}
-            sx={{
-              bgcolor: "#004b23",
-              '&:hover': { bgcolor: "#003d1c" },
-              borderRadius: "6px",
-              textTransform: "none",
-              fontWeight: 700
-            }}
-          >
-            {isInviting ? <CircularProgress size={16} sx={{ color: '#fff' }} /> : "Invite Reviewers"}
-          </Button>
-        );
-      }
-    });
+
+                setInvitingStates((prev: any) => ({ ...prev, [paperID]: true }));
+                
+                try {
+                  const mappedReviewers = selected.map((name: string) => {
+                    const revObj = reviewersData?.find((r: any) => r.name === name);
+                    return { id: revObj?.id, name: name };
+                  });
+
+                  const response = await fetch("/api/associate-editor/invite-reviewers", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      paperID: paperID,
+                      paperTitle: params.row.title,
+                      reviewers: mappedReviewers,
+                      deadline: deadlines[paperID] || null
+                    })
+                  });
+
+                  if (response.ok) {
+                    Swal.fire({
+                      icon: "success",
+                      title: "Invitations Sent",
+                      text: "Peer review invitations have been dispatched successfully.",
+                      confirmButtonColor: "#004b23"
+                    });
+                    setFlag((prev: boolean) => !prev);
+                  } else {
+                    throw new Error("Failed to invite reviewers");
+                  }
+                } catch (err) {
+                  console.error(err);
+                  Swal.fire({
+                    icon: "error",
+                    title: "Failed",
+                    text: "An error occurred while sending review invitations."
+                  });
+                } finally {
+                  setInvitingStates((prev: any) => ({ ...prev, [paperID]: false }));
+                }
+              }}
+              sx={{
+                bgcolor: "#004b23",
+                '&:hover': { bgcolor: "#003d1c" },
+                borderRadius: "6px",
+                textTransform: "none",
+                fontWeight: 700
+              }}
+            >
+              {isInviting ? <CircularProgress size={16} sx={{ color: '#fff' }} /> : "Invite Reviewers"}
+            </Button>
+          );
+        }
+      });
+    }
 
     columns.push({
       field: "AE Recommendation",
@@ -943,6 +1124,7 @@ const JournalsTable = ({
       width: 220,
       renderCell: (params: any) => {
         const status = params.row.status;
+        const isSelected = selectedPaperId === params.row.paperID;
         
         if (status === "DECISION_PENDING") {
           return (
@@ -950,13 +1132,14 @@ const JournalsTable = ({
               <Button 
                 variant="contained" 
                 size="small" 
+                disabled={isSubEditor && !isSelected}
                 onClick={() => {
                   setSelectedRecomPaper(params.row);
                   setIsAERecomOpen(true);
                 }}
                 sx={{
-                  bgcolor: "#7b1fa2",
-                  '&:hover': { bgcolor: "#4a148c" },
+                  bgcolor: isSubEditor && !isSelected ? "#ccc" : "#7b1fa2",
+                  '&:hover': { bgcolor: isSubEditor && !isSelected ? "#ccc" : "#4a148c" },
                   borderRadius: "6px",
                   textTransform: "none",
                   fontWeight: 600,
@@ -975,8 +1158,8 @@ const JournalsTable = ({
           );
         } else {
           return (
-            <Typography variant="body2" color="textSecondary" sx={{ fontStyle: "italic", textAlign: "center", width: "100%" }}>
-              Awaiting Peer Reviews
+            <Typography variant="body2" sx={{ color: "#666", textAlign: "center", width: "100%" }}>
+              Under Peer Review
             </Typography>
           );
         }

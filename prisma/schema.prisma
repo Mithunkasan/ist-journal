@@ -18,6 +18,7 @@ enum UserRole {
   AUTHOR
   REVIEWER
   ASSOCIATE_EDITOR
+  GUEST_EDITOR
 }
 
 
@@ -77,6 +78,7 @@ model User {
   orcid             String?
   resetOtp          String?
   resetOtpExpires   DateTime?
+  selectedPaperId   Int?
   assignedJournals  AssignedJournals[] @relation(name: "AssignedJournals_User")
   reviewingJournals AssignedJournals[] @relation(name: "AssignedJournals_Reviewer")
   reviewedJournals  AssignedJournals[] @relation(name: "AssignedJournals_Reviewers")

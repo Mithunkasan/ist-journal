@@ -16,13 +16,23 @@ function getAllowedCreatedRole(sessionRole: UserRole | undefined, requestedRole:
     return publicSelfRegisterRoles.has(requestedRole) ? requestedRole : null;
   }
 
-  if (sessionRole === UserRole.ADMIN && requestedRole === UserRole.EDITOR) {
-    return requestedRole;
+  if (sessionRole === UserRole.ADMIN) {
+    if (
+      requestedRole === UserRole.ADMIN ||
+      requestedRole === UserRole.EDITOR ||
+      requestedRole === UserRole.REVIEWER ||
+      requestedRole === UserRole.AUTHOR ||
+      requestedRole === UserRole.ASSOCIATE_EDITOR ||
+      requestedRole === UserRole.GUEST_EDITOR
+    ) {
+      return requestedRole;
+    }
   }
 
-  if (
-    sessionRole === UserRole.EDITOR &&
-    (requestedRole === UserRole.ASSOCIATE_EDITOR || requestedRole === UserRole.REVIEWER)
+  if (sessionRole === UserRole.EDITOR &&
+    (requestedRole === UserRole.ASSOCIATE_EDITOR || 
+     requestedRole === UserRole.REVIEWER || 
+     requestedRole === UserRole.GUEST_EDITOR)
   ) {
     return requestedRole;
   }
@@ -60,7 +70,11 @@ export async function POST(request: any) {
     return new NextResponse("Password must contain at least one special character.", { status: 400 });
   }
 
-  const requestedRole = String(role).toUpperCase() as UserRole;
+  let roleStr = String(role).toUpperCase();
+  if (roleStr === "USER") {
+    roleStr = "AUTHOR";
+  }
+  const requestedRole = roleStr as UserRole;
   if (!Object.values(UserRole).includes(requestedRole)) {
     return new NextResponse("Invalid role", { status: 400 });
   }

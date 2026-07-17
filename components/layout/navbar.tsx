@@ -192,8 +192,13 @@ const Navbar = () => {
                 </Link>
               )}
               {session?.data?.user?.role === "ASSOCIATE_EDITOR" && (
-                <Link href="/associate" style={{ marginInline: "10px", color: "#004B23", display: "block" }}>
+                <Link href="/associate-editor/dashboard" style={{ marginInline: "10px", color: "#004B23", display: "block" }}>
                   {t("nav.associate")}
+                </Link>
+              )}
+              {session?.data?.user?.role === "GUEST_EDITOR" && (
+                <Link href="/guest-editor/dashboard" style={{ marginInline: "10px", color: "#004B23", display: "block" }}>
+                  {t("nav.guesteditor") || "Guest Editor"}
                 </Link>
               )}
               {session?.data?.user?.role === "REVIEWER" && (

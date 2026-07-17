@@ -10,7 +10,13 @@ import {
   Card,
   CardContent,
   IconButton,
-  Divider
+  Divider,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Button
 } from "@mui/material";
 import { 
   People, 
@@ -54,6 +60,75 @@ const AdminDashboardHome = () => {
   });
   const [activities, setActivities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Quick Actions States
+  const [isAnnouncementOpen, setIsAnnouncementOpen] = useState(false);
+  const [announcementSubmitting, setAnnouncementSubmitting] = useState(false);
+  const [announcementForm, setAnnouncementForm] = useState({
+    title: "",
+    titleAr: "",
+    content: "",
+    contentAr: ""
+  });
+
+  const [backupLoading, setBackupLoading] = useState(false);
+  const [isBackupOpen, setIsBackupOpen] = useState(false);
+
+  const handleSystemBackup = async () => {
+    setIsBackupOpen(true);
+    setBackupLoading(true);
+    try {
+      const response = await fetch("/api/admin/backup");
+      if (response.ok) {
+        const data = await response.json();
+        const jsonStr = JSON.stringify(data, null, 2);
+        const blob = new Blob([jsonStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `system_backup_${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      } else {
+        alert("Failed to download system backup.");
+      }
+    } catch (error) {
+      console.error("Backup error:", error);
+      alert("An error occurred while generating system backup.");
+    } finally {
+      setBackupLoading(false);
+    }
+  };
+
+  const handleCreateAnnouncement = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!announcementForm.title || !announcementForm.content) {
+      alert("Please fill in the required fields (Title and Content).");
+      return;
+    }
+    setAnnouncementSubmitting(true);
+    try {
+      const response = await fetch("/api/announcements", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(announcementForm)
+      });
+      if (response.ok) {
+        setIsAnnouncementOpen(false);
+        setAnnouncementForm({ title: "", titleAr: "", content: "", contentAr: "" });
+        alert("Announcement created successfully!");
+      } else {
+        alert("Failed to create announcement.");
+      }
+    } catch (error) {
+      console.error("Announcement error:", error);
+      alert("An error occurred while creating announcement.");
+    } finally {
+      setAnnouncementSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -173,16 +248,111 @@ const AdminDashboardHome = () => {
                 <span>{t("admin.reviewusers")}</span>
                 <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">{t("admin.actionneeded")}</span>
               </button>
-              <button className="w-full text-left rtl:text-right p-3 rounded-xl bg-white/10 hover:bg-white/20 transition-all font-medium border border-white/20">
+              <button 
+                onClick={() => setIsAnnouncementOpen(true)}
+                className="w-full text-left rtl:text-right p-3 rounded-xl bg-white/10 hover:bg-white/20 transition-all font-medium border border-white/20"
+              >
                 {t("admin.createannouncement")}
               </button>
-              <button className="w-full text-left rtl:text-right p-3 rounded-xl bg-white/10 hover:bg-white/20 transition-all font-medium border border-white/20">
+              <button 
+                onClick={handleSystemBackup}
+                className="w-full text-left rtl:text-right p-3 rounded-xl bg-white/10 hover:bg-white/20 transition-all font-medium border border-white/20"
+              >
                 {t("admin.sysbackup")}
               </button>
             </Box>
           </Paper>
         </Grid>
       </Grid>
+
+      {/* Create Announcement Dialog */}
+      <Dialog 
+        open={isAnnouncementOpen} 
+        onClose={() => setIsAnnouncementOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontWeight: 700, color: "#004b23" }}>
+          {t("admin.createannouncement") || "Create Announcement"}
+        </DialogTitle>
+        <form onSubmit={handleCreateAnnouncement}>
+          <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <TextField
+              label="Title (English) *"
+              required
+              fullWidth
+              value={announcementForm.title}
+              onChange={(e) => setAnnouncementForm(prev => ({ ...prev, title: e.target.value }))}
+            />
+            <TextField
+              label="Title (Arabic)"
+              fullWidth
+              value={announcementForm.titleAr}
+              onChange={(e) => setAnnouncementForm(prev => ({ ...prev, titleAr: e.target.value }))}
+            />
+            <TextField
+              label="Content (English) *"
+              required
+              fullWidth
+              multiline
+              rows={4}
+              value={announcementForm.content}
+              onChange={(e) => setAnnouncementForm(prev => ({ ...prev, content: e.target.value }))}
+            />
+            <TextField
+              label="Content (Arabic)"
+              fullWidth
+              multiline
+              rows={4}
+              value={announcementForm.contentAr}
+              onChange={(e) => setAnnouncementForm(prev => ({ ...prev, contentAr: e.target.value }))}
+            />
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 3 }}>
+            <Button onClick={() => setIsAnnouncementOpen(false)} color="inherit">
+              Cancel
+            </Button>
+            <Button 
+              type="submit" 
+              variant="contained" 
+              disabled={announcementSubmitting}
+              sx={{ bgcolor: "#004b23", "&:hover": { bgcolor: "#003b1c" } }}
+            >
+              {announcementSubmitting ? <CircularProgress size={24} sx={{ color: "#fff" }} /> : "Create"}
+            </Button>
+          </DialogActions>
+        </form>
+      </Dialog>
+
+      {/* System Backup Dialog */}
+      <Dialog
+        open={isBackupOpen}
+        onClose={() => !backupLoading && setIsBackupOpen(false)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontWeight: 700, color: "#004b23" }}>
+          {t("admin.sysbackup") || "System Backup"}
+        </DialogTitle>
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 4, gap: 2 }}>
+          {backupLoading ? (
+            <>
+              <CircularProgress sx={{ color: '#004b23' }} />
+              <Typography variant="body1" sx={{ color: "#000" }}>Generating database backup dump...</Typography>
+            </>
+          ) : (
+            <>
+              <CheckCircle sx={{ color: 'green', fontSize: 60 }} />
+              <Typography variant="body1" sx={{ color: "#000" }}>Backup completed & downloaded successfully!</Typography>
+            </>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 3 }}>
+          <Button onClick={() => setIsBackupOpen(false)} disabled={backupLoading} variant="contained" sx={{ bgcolor: "#004b23", "&:hover": { bgcolor: "#003b1c" } }}>
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
