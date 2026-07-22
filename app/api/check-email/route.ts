@@ -10,13 +10,21 @@ export async function POST(request: Request) {
       return new NextResponse("Email parameter is required", { status: 400 });
     }
 
-    const user = await prisma.user.findUnique({
+    const users = await prisma.user.findMany({
       where: {
         email: email.toLowerCase().trim(),
       },
+      select: {
+        role: true,
+      },
     });
 
-    return NextResponse.json({ exists: !!user });
+    const roles = users.map(u => u.role).filter(Boolean);
+
+    return NextResponse.json({
+      exists: users.length > 0,
+      roles: roles,
+    });
   } catch (error: any) {
     console.error("Error in /api/check-email:", error);
     return new NextResponse(error.message || "Internal Server Error", { status: 500 });

@@ -11,6 +11,7 @@ import { useLanguage } from "@/lib/LanguageContext";
 import { useAppDispatch } from "@/lib/hooks/redux";
 import { filterByJournalID } from "@/redux/actions/journalActions";
 import { JournalPaperType } from "@/types/Journals/author";
+import { formatPaperId } from "@/lib/utils/utils";
 
 const TrackStatus = () => {
   const { t, lang, dir } = useLanguage();
@@ -194,7 +195,7 @@ const TrackStatus = () => {
                   <span className="text-[#004b23] font-semibold ">
                     {t("track.cardId")}
                   </span>
-                  <span>{data?.paperID}</span>
+                  <span>{formatPaperId(data?.paperID)}</span>
                 </div>
 
                 <div className="flex gap-2 text-[15px]">
@@ -223,7 +224,9 @@ const TrackStatus = () => {
                     {t("track.cardStatus")}
                   </span>
                   <span className="text-[#004b23] font-bold">
-                    {data?.status}
+                    {data?.status === "SUBMITTED" || data?.status === "ASSIGNED_TO_EDITOR" || data?.status === "EDITOR_SCREENING"
+                      ? "Paper Submitted"
+                      : (data?.status || "").replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
                   </span>
                 </div>
               </div>

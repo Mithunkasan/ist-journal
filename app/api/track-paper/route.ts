@@ -1,12 +1,18 @@
 import prisma from "@/lib/prisma";
-
 import { NextResponse } from "next/server";
+import { parsePaperId } from "@/lib/utils/utils";
 
 export async function POST(request: any) {
   const body = await request.json();
+  const parsedId = parsePaperId(body.data);
+
+  if (parsedId === null) {
+    return NextResponse.json([]);
+  }
+
   const exist = await prisma.submittedJournals.findFirst({
     where: {
-      paperID: body.data,
+      paperID: parsedId,
     },
     select: {
       id: true,

@@ -30,6 +30,8 @@ import { useLanguage } from "@/lib/LanguageContext";
 import { submitJournalPaper, updateSubmittedJournalPaper } from "@/redux/actions/journalActions";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import { useSession } from "next-auth/react";
+import { formatPaperId } from "@/lib/utils/utils";
 
 type AuthorSubmitFormProps = {
   onSubmitted?: (paper: any) => void;
@@ -244,6 +246,7 @@ const AuthorSubmitForm = ({
   editPaperId,
 }: AuthorSubmitFormProps) => {
   const router = useRouter();
+  const { data: session } = useSession();
   const dispatch = useAppDispatch();
   const { lang, dir } = useLanguage();
   const copy = FORM_COPY[lang];
@@ -277,6 +280,13 @@ const AuthorSubmitForm = ({
         const response = await axios.get("/api/author/papers");
         const paper = response.data.find((p: any) => String(p.paperID) === editPaperId);
         if (paper) {
+          const editableStatuses = ["SUBMITTED", "ASSIGNED_TO_EDITOR", "EDITOR_SCREENING"];
+          const currentStatus = paper.status ? String(paper.status).toUpperCase() : "";
+          if (!editableStatuses.includes(currentStatus)) {
+            alert("This paper has been assigned for review and can no longer be edited.");
+            router.replace(redirectPath || "/author/submissions");
+            return;
+          }
           setFormData({
             submissionType: paper.type || "Research Paper",
             paperTitle: paper.title || "",
@@ -487,7 +497,7 @@ const AuthorSubmitForm = ({
     const hasTooManyKeywords = selectedKeywords.length > 5;
     const hasMissingUpload = !selectedFile && !uploadedFileUrl;
     const hasMissingAuthorName = authors.some((author) => !author.name.trim());
-    const hasMissingAuthorEmail = !authors[0]?.email.trim();
+    const hasMissingAuthorEmail = !authors[correspondingAuthorIndex]?.email.trim();
     const hasMissingRequiredField =
       !formData.paperTitle.trim() ||
       !formData.abstract.trim() ||
@@ -557,12 +567,15 @@ const AuthorSubmitForm = ({
       const submittedPaper = await submitPaper(paperUrl, supportingUrl, coverLetterUrl);
       onSubmitted?.(submittedPaper);
 
+      const actualPaperId = submittedPaper?.paperID ? String(submittedPaper.paperID) : paperId;
+      const formattedActualPaperId = formatPaperId(actualPaperId);
+
       const templateParams = {
         request_title: formData.paperTitle,
         abstract: formData.abstract,
         to_email: authors.map((author) => author.email.trim()).filter(Boolean).join(", "),
         to_name: authors.map((author) => author.name.trim()).filter(Boolean).join(", "),
-        request_id: paperId,
+        request_id: formattedActualPaperId,
         submission_date: new Date().toLocaleDateString(),
         company_name: "IST-ONLINE-Journal",
         support_email: "",
@@ -571,20 +584,30 @@ const AuthorSubmitForm = ({
       };
 
       try {
-        const toEmails = authors.map((author) => author.email.trim()).filter(Boolean).join(", ");
-        const toNames = authors.map((author) => author.name.trim()).filter(Boolean).join(", ");
+        const sessionEmail = session?.user?.email?.trim().toLowerCase();
+        const toEmails = authors
+          .map((author) => author.email.trim())
+          .filter(Boolean)
+          .filter((email) => email.toLowerCase() !== sessionEmail)
+          .join(", ");
+        const toNames = authors
+          .filter((author) => author.email.trim().toLowerCase() !== sessionEmail)
+          .map((author) => author.name.trim())
+          .filter(Boolean)
+          .join(", ");
         
-        await fetch("/api/send-email", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            to: toEmails,
-            subject: `[IST Journal] Manuscript Submitted Successfully`,
-            body: `Dear ${toNames},\n\nYour manuscript titled "${formData.paperTitle}" has been successfully submitted and is awaiting editorial initial screening.\n\nPaper ID: ${paperId}\nSubmission Date: ${new Date().toLocaleDateString()}\n\nBest regards,\nEditorial Board`,
-            templateParams: { paperID: paperId }
-          })
-        });
-      } catch (emailError) {
+        if (toEmails) {
+          await fetch("/api/send-email", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              to: toEmails,
+              subject: `[IST Journal] Manuscript Submitted Successfully`,
+              body: `Dear ${toNames},\n\nYour manuscript titled "${formData.paperTitle}" has been successfully submitted and is awaiting editorial initial screening.\n\nPaper ID: ${formattedActualPaperId}\nSubmission Date: ${new Date().toLocaleDateString()}\n\nBest regards,\nEditorial Board`,
+              templateParams: { paperID: formattedActualPaperId }
+            })
+          });
+        }      } catch (emailError) {
         console.error(emailError);
         setSubmissionMessage({ type: "error", text: copy.emailError });
       }
@@ -1413,16 +1436,16 @@ const AuthorSubmitForm = ({
                     {correspondingAuthorIndex === index ? <StarIcon fontSize="small" /> : <StarBorderIcon fontSize="small" />}
                   </Box>
                   <input
-                    required={index === 0}
+                    required={index === correspondingAuthorIndex}
                     type="email"
                     name={`authorEmail-${index}`}
                     dir={dir}
                     value={author.email}
-                    className={singleLineFieldClassName(error.authorEmailId && index === 0 && !author.email.trim())}
-                    placeholder={copy.authorEmailPlaceholder}
+                    className={singleLineFieldClassName(error.authorEmailId && index === correspondingAuthorIndex && !author.email.trim())}
+                    placeholder={lang === "ar" ? `البريد الإلكتروني للمؤلف ${index + 1}` : `Author ${index + 1} Email`}
                     onChange={(event) => updateAuthor(index, "email", event.target.value)}
                   />
-                  {index === 0 && <span style={{ color: "red" }}>*</span>}
+                  {index === correspondingAuthorIndex && <span style={{ color: "red" }}>*</span>}
                   {index > 0 && (
                     <Button
                       type="button"
@@ -1446,6 +1469,9 @@ const AuthorSubmitForm = ({
                 Add Email
               </Button>
               {renderRequiredError(error.authorEmailId)}
+              <Typography variant="caption" sx={{ color: "gray", mt: 1, display: "block" }}>
+                {lang === "ar" ? "* يشير إلى المؤلف المراسِل." : "* Indicates the Corresponding Author."}
+              </Typography>
             </Box>
           </FormControl>
 

@@ -47,7 +47,7 @@ export async function POST(
     if (!submission) {
       // Find author user
       const authorUser = await prisma.user.findFirst({
-        where: { email: { contains: paper.authorEmail || "" } }
+        where: { email: { contains: paper.authorEmail || "" }, role: "AUTHOR" }
       });
       
       // Ensure Author profile exists

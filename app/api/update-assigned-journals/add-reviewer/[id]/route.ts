@@ -53,7 +53,7 @@ export async function PATCH(
     if (!submission) {
       // Find author user
       const authorUser = await prisma.user.findFirst({
-        where: { email: { contains: existingJournal.authorEmail || "" } }
+        where: { email: { contains: existingJournal.authorEmail || "" }, role: "AUTHOR" }
       });
       
       let authorProfile = authorUser ? await prisma.author.findUnique({ where: { userId: authorUser.id } }) : null;

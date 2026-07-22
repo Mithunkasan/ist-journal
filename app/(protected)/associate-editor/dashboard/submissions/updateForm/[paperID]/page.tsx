@@ -27,6 +27,7 @@ import { JournalPaperType } from "@/types/Journals/author";
 import { useLanguage } from "@/lib/LanguageContext";
 import VisibilityRoundedIcon from "@mui/icons-material/VisibilityRounded";
 import ViewPaper from "@/components/admin/viewPaper";
+import { formatPaperId, parsePaperId } from "@/lib/utils/utils";
 
 type Props = { params: { paperID: string } };
 
@@ -66,7 +67,7 @@ const UpdateForm = ({ params }: Props) => {
         // Make sure we have an array before filtering
         if (Array.isArray(getJournalPaper)) {
           const filterData = getJournalPaper.filter((data: JournalPaperType) => {
-            return data.paperID === parseInt(params.paperID);
+            return data.paperID === parsePaperId(params.paperID);
           });
 
           if (filterData.length > 0) {
@@ -249,7 +250,7 @@ const UpdateForm = ({ params }: Props) => {
                   <input
                     type="text"
                     name="paperID"
-                    value={data.paperID}
+                    value={formatPaperId(data.paperID)}
                     className={
                       "outline-none border py-3 px-3 rounded-lg border-[#d2d2d2] w-[200px] md:w-[300px] lg:w-[500px]"
                     }

@@ -74,7 +74,10 @@ export async function POST(request: any) {
   if (roleStr === "USER") {
     roleStr = "AUTHOR";
   }
-  const requestedRole = roleStr as UserRole;
+  let requestedRole = roleStr as UserRole;
+  if (requestedRole === UserRole.EDITOR) {
+    requestedRole = UserRole.ASSOCIATE_EDITOR;
+  }
   if (!Object.values(UserRole).includes(requestedRole)) {
     return new NextResponse("Invalid role", { status: 400 });
   }
@@ -85,13 +88,20 @@ export async function POST(request: any) {
     return new NextResponse("This role cannot be registered from here", { status: 403 });
   }
 
-  const exist = await prisma.user.findUnique({
+  const exist = await prisma.user.findFirst({
     where: {
-      email: email.toLowerCase(),
+      email: email.toLowerCase().trim(),
+      role: allowedRole,
     },
   });
 
   if (exist) {
+    if (allowedRole === UserRole.AUTHOR) {
+      return new NextResponse("Email already registered as an Author", { status: 409 });
+    }
+    if (allowedRole === UserRole.REVIEWER) {
+      return new NextResponse("Email already registered as a Reviewer", { status: 409 });
+    }
     return new NextResponse("Email already exists", { status: 409 });
   }
 
@@ -104,7 +114,7 @@ export async function POST(request: any) {
   const user = await prisma.user.create({
     data: {
       name,
-      email: email.toLowerCase(),
+      email: email.toLowerCase().trim(),
       role: allowedRole,
       password: hashedPassword,
       university,

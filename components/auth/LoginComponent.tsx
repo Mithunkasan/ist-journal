@@ -30,7 +30,8 @@ import {
   InputAdornment, 
   IconButton, 
   Alert,
-  Divider
+  Divider,
+  MenuItem
 } from "@mui/material";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/lib/LanguageContext";
@@ -53,6 +54,51 @@ const LoginPage = () => {
     password: false,
     btnDisabled: true,
   });
+
+  const [roles, setRoles] = useState<string[]>([]);
+  const [selectedRole, setSelectedRole] = useState<string>("");
+
+  useEffect(() => {
+    if (!formData.email) {
+      setRoles([]);
+      setSelectedRole("");
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setRoles([]);
+      setSelectedRole("");
+      return;
+    }
+
+    const checkEmail = setTimeout(async () => {
+      try {
+        const res = await fetch("/api/check-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: formData.email.trim() }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.exists && data.roles) {
+            setRoles(data.roles);
+            if (data.roles.includes("AUTHOR") && data.roles.includes("REVIEWER")) {
+              setSelectedRole("AUTHOR");
+            } else {
+              setSelectedRole(data.roles[0] || "");
+            }
+          } else {
+            setRoles([]);
+            setSelectedRole("");
+          }
+        }
+      } catch (err) {
+        console.error("Failed to check email on login:", err);
+      }
+    }, 400);
+
+    return () => clearTimeout(checkEmail);
+  }, [formData.email]);
 
   // Helper function to determine redirect path
   const getRedirectPath = useCallback(() => {
@@ -97,6 +143,7 @@ const LoginPage = () => {
       const result = await signIn("credentials", {
         email: formData.email.trim(),
         password: formData.password.trim(),
+        role: selectedRole,
         redirect: false,
         callbackUrl,
       });
@@ -108,7 +155,7 @@ const LoginPage = () => {
           const userRes = await fetch("/api/get-user", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ data: { email: formData.email.trim() } })
+            body: JSON.stringify({ data: { email: formData.email.trim(), role: selectedRole } })
           });
           if (userRes.ok) {
             const userData = await userRes.json();
@@ -186,7 +233,7 @@ const LoginPage = () => {
       <div className="absolute top-4 left-4 z-50">
         <button
           type="button"
-          onClick={() => router.back()}
+          onClick={() => router.push("/")}
           className="flex items-center gap-1 px-3 py-2 rounded-md border border-white text-white bg-transparent text-sm font-medium hover:bg-white hover:text-[#004b23] transition-all duration-200 shadow-sm"
         >
           <ArrowBack sx={{ fontSize: 18 }} />
@@ -255,6 +302,20 @@ const LoginPage = () => {
                     sx: { borderRadius: 2 }
                   }}
                 />
+
+                {roles.includes("AUTHOR") && roles.includes("REVIEWER") && (
+                  <TextField
+                    fullWidth
+                    select
+                    label={lang === "ar" ? "الدخول بصفتك" : "Login As"}
+                    value={selectedRole}
+                    onChange={(e) => setSelectedRole(e.target.value)}
+                    InputProps={{ sx: { borderRadius: 2 } }}
+                  >
+                    <MenuItem value="AUTHOR">{lang === "ar" ? "مؤلف" : "Author"}</MenuItem>
+                    <MenuItem value="REVIEWER">{lang === "ar" ? "مراجِع" : "Reviewer"}</MenuItem>
+                  </TextField>
+                )}
 
                 <TextField
                   fullWidth

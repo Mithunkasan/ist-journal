@@ -1,5 +1,42 @@
 [
   {
+    "id": 1784356571868,
+    "timestamp": "2026-07-18T06:36:08.028Z",
+    "to": "mithunkasanmatt@gmail.com",
+    "subject": "Welcome to IST Online Journal - Your Account Credentials",
+    "body": "Hello Mithun,\n\nWelcome to IST Online Journal! Your account has been registered successfully.\n\nHere are your login credentials:\nEmail: mithunkasanmatt@gmail.com\nPassword: Matt@4321\n\nThank you,\nIST Online Journal Editorial Board"
+  },
+  {
+    "id": 1784296055929,
+    "timestamp": "2026-07-17T13:47:31.695Z",
+    "to": "amshesham04@gmail.com, mattadarsh@gmail.com",
+    "subject": "[IST Journal] Manuscript Submitted Successfully",
+    "body": "Dear Hesham, Adarsh,\n\nYour manuscript titled \"Wildlife Technologies\" has been successfully submitted and is awaiting editorial initial screening.\n\nPaper ID: 107791541\nSubmission Date: 17/07/2026\n\nBest regards,\nEditorial Board",
+    "templateParams": {
+      "paperID": "107791541"
+    }
+  },
+  {
+    "id": 1784296055218,
+    "timestamp": "2026-07-17T13:47:30.874Z",
+    "to": "mithunkasanmatt@gmail.com",
+    "subject": "[IST Journal] Manuscript Submitted Successfully",
+    "body": "Dear Mithun,\n\nYour manuscript titled \"Wildlife Technologies\" has been successfully submitted and is awaiting editorial initial screening.\n\nPaper ID: 107791541\n\nBest regards,\nEditorial Board",
+    "templateParams": {
+      "paperID": 107791541
+    }
+  },
+  {
+    "id": 1784296055053,
+    "timestamp": "2026-07-17T13:47:31.126Z",
+    "to": "chiefeditor@ist.com",
+    "subject": "[IST Journal] New Manuscript Assigned for Review",
+    "body": "Dear Chief Editor,\n\nA new manuscript titled \"Wildlife Technologies\" has been submitted and assigned to you for editorial review.\n\nPaper ID: 107791541\nAuthor(s): Adarsh, Hesham\n\nPlease log in to your Editor Dashboard to review the submission and assign reviewers.\n\nBest regards,\nEditorial Office",
+    "templateParams": {
+      "paperID": 107791541
+    }
+  },
+  {
     "id": 1784280165922,
     "timestamp": "2026-07-17T09:22:40.774Z",
     "to": "kavinav423@gmail.com",

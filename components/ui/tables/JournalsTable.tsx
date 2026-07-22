@@ -122,8 +122,28 @@ const JournalsTable = ({
 
   useEffect(() => {
     const fetchAssignees = async () => {
-      if (session.data?.user?.role === "EDITOR" || session.data?.user?.role === "ASSOCIATE_EDITOR") {
-        try {
+      try {
+        if (session.data?.user?.role === "ASSOCIATE_EDITOR") {
+          const geRes = await axios.get("/api/get-guest-editor");
+          const currentUser = session.data.user;
+          const selfAssignee = currentUser?.id && currentUser?.name
+            ? [{
+                id: currentUser.id,
+                name: currentUser.name,
+                email: currentUser.email,
+                role: currentUser.role,
+                roleLabel: "Associate Editor",
+              }]
+            : [];
+
+          setAssignees([
+            ...geRes.data.map((u: any) => ({ ...u, roleLabel: "Guest Editor" })),
+            ...selfAssignee,
+          ]);
+          return;
+        }
+
+        if (session.data?.user?.role === "EDITOR") {
           const [aeRes, revRes, geRes, edRes] = await Promise.all([
             axios.get("/api/get-associate"),
             axios.get("/api/get-reviewer"),
@@ -131,16 +151,19 @@ const JournalsTable = ({
             axios.get("/api/get-editor")
           ]);
           
+          const currentUserEmail = session.data?.user?.email;
           const combined = [
-            ...aeRes.data.map((u: any) => ({ ...u, roleLabel: "Sub Editor" })),
+            ...aeRes.data.map((u: any) => ({ ...u, roleLabel: "Associate Editor" })),
             ...revRes.data.map((u: any) => ({ ...u, roleLabel: "Reviewer" })),
             ...geRes.data.map((u: any) => ({ ...u, roleLabel: "Guest Editor" })),
-            ...edRes.data.map((u: any) => ({ ...u, roleLabel: "Editor" }))
+            ...edRes.data
+              .filter((u: any) => u.email === currentUserEmail)
+              .map((u: any) => ({ ...u, roleLabel: "Chief Editor" }))
           ];
           setAssignees(combined);
-        } catch (err) {
-          console.error("Failed to fetch assignees", err);
         }
+      } catch (err) {
+        console.error("Failed to fetch assignees", err);
       }
     };
     fetchAssignees();
@@ -164,8 +187,53 @@ const JournalsTable = ({
     return ndata;
   }
 
+  const getAssignableUsers = () => {
+    if (session.data?.user?.role === "ASSOCIATE_EDITOR") {
+      return assignees.filter((assignee: any) => (
+        assignee.roleLabel === "Guest Editor" ||
+        assignee.email === session.data?.user?.email
+      ));
+    }
+
+    if (session.data?.user?.role === "EDITOR") {
+      return assignees;
+    }
+
+    return [];
+  };
+
+  const isSubmissionAssigned = (row: any) => {
+    return Boolean(
+      row?.associateEditor ||
+      row?.reviewers ||
+      row?.isAssociatedEditorAssigned === "Yes" ||
+      row?.isReviewerAssigned === "Yes"
+    );
+  };
+
   useEffect(() => {
     if (titles === "Editor_Queue") {
+      const add = journalsPaper && journalsPaper.length > 0 ? Object.keys(journalsPaper[0]) : [];
+      setJournals(
+        rm_string(add, [
+          "reviewers",
+          "user",
+          "ispublished",
+          "isEditable",
+          "isReviewerAssigned",
+          "paperUrl",
+          "editorName",
+          "isAssigndToEditor",
+          "createdAt",
+          "updatedAt",
+          "primaryDomain",
+          "secondaryDomain",
+          "authorEmail",
+          "txtUrl",
+        ])
+      );
+    }
+    if (titles === "Associate_All_Submissions") {
       const add = journalsPaper && journalsPaper.length > 0 ? Object.keys(journalsPaper[0]) : [];
       setJournals(
         rm_string(add, [
@@ -358,6 +426,32 @@ const JournalsTable = ({
         ])
       );
     }
+    if (titles === "Guest_Assigned_Queue") {
+      const add = journalsPaper && journalsPaper.length > 0 ? Object.keys(journalsPaper[0]) : [];
+      setJournals(
+        rm_string(add, [
+          "reviewers",
+          "user",
+          "ispublished",
+          "isEditable",
+          "isReviewerAssigned",
+          "paperUrl",
+          "editorName",
+          "isAssigndToEditor",
+          "createdAt",
+          "updatedAt",
+          "primaryDomain",
+          "secondaryDomain",
+          "authorEmail",
+          "txtUrl",
+          "supportingFilesUrl",
+          "doi",
+          "productionStep",
+          "revisionComments",
+          "responseLetterUrl"
+        ])
+      );
+    }
   }, [journalsPaper, titles]);
 
   const rows: any = journalsPaper?.map((data: any) => ({
@@ -431,6 +525,7 @@ const JournalsTable = ({
 
   const columns: any = journals?.map((data: any) => {
     const isTitle = data === "title";
+    const isStatus = data === "status";
     const headerName = getHeaderName(data);
     const calculatedWidth = Math.max(160, headerName.length * 9 + 40);
     return {
@@ -456,6 +551,14 @@ const JournalsTable = ({
               {params.value}
             </div>
           )
+        : isStatus
+        ? (params: any) => {
+            const val = params.value;
+            if (val === "SUBMITTED" || val === "ASSIGNED_TO_EDITOR" || val === "EDITOR_SCREENING") {
+              return "Paper Submitted";
+            }
+            return val ? val.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()) : "";
+          }
         : undefined,
     };
   });
@@ -819,58 +922,110 @@ const JournalsTable = ({
     });
   }
 
-  if (titles === "Editor_Queue") {
+  if (titles === "Editor_Queue" || titles === "Associate_All_Submissions") {
+    if (titles === "Editor_Queue") {
+      columns.push({
+        field: "Assigned To",
+        headerName: "Assigned To",
+        headerAlign: "center",
+        width: 240,
+        align: "center",
+        renderCell: (params: any) => {
+          const assignedNames = [
+            params.row.associateEditor,
+            params.row.reviewers,
+          ].filter(Boolean);
+
+          return (
+            <Typography variant="body2" sx={{ fontWeight: 600, color: "#004b23", width: "100%", textAlign: "center" }}>
+              {assignedNames.length ? assignedNames.join(", ") : "Not assigned"}
+            </Typography>
+          );
+        },
+      });
+    }
+
     columns.push({
-      field: "Assign Associate Editor",
-      headerName: "Assign Associate Editor",
+      field: "Assign Editor",
+      headerName: "Assign To",
       headerAlign: "center",
       width: 250,
       renderCell: (params: any) => {
         const paperCategory = params.row.category || "";
+        const assignableUsers = getAssignableUsers();
+        const currentAssignee = titles === "Associate_All_Submissions"
+          ? ""
+          : selectedAEs[params.row.paperID] !== undefined
+            ? selectedAEs[params.row.paperID]
+            : (params.row.associateEditor || "");
+
+        if (isSubmissionAssigned(params.row)) {
+          return (
+            <Typography variant="body2" sx={{ fontWeight: 600, color: "#004b23", width: "100%", textAlign: "center" }}>
+              Assigned
+            </Typography>
+          );
+        }
+
         return (
           <select
-            value={selectedAEs[params.row.paperID] !== undefined ? selectedAEs[params.row.paperID] : (params.row.associateEditor || "")}
+            value={currentAssignee}
             onChange={async (e) => {
               const selectedValue = e.target.value;
+              const selectedAssignee = assignableUsers.find((assignee: any) => assignee.name === selectedValue);
               setSelectedAEs((prev: any) => ({ ...prev, [params.row.paperID]: selectedValue }));
+
+              if (!selectedValue) return;
               
               try {
-                // Update SubmittedJournals
-                const response = await fetch(`/api/update-submit-paper/${params.row.paperID}`, {
-                  method: "PATCH",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    data: {
-                      associateEditor: selectedValue,
-                      isAssociatedEditorAssigned: selectedValue ? true : false,
-                      status: "UNDER_EDITOR_REVIEW",
-                    }
-                  })
-                });
-                
-                if (response.ok) {
-                  // Update AssignedJournals if exists
-                  await fetch(`/api/update-assigned-journals/update-assigned-paper-status/${params.row.paperID}`, {
+                let response: Response;
+
+                if (selectedAssignee?.roleLabel === "Reviewer") {
+                  response = await fetch("/api/associate-editor/invite-reviewers", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      paperID: params.row.paperID,
+                      paperTitle: params.row.title,
+                      reviewers: [{ id: selectedAssignee.id, name: selectedAssignee.name }],
+                    })
+                  });
+                } else {
+                  response = await fetch(`/api/update-submit-paper/${params.row.paperID}`, {
                     method: "PATCH",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                       data: {
                         associateEditor: selectedValue,
-                        isAssociatedEditorAssigned: selectedValue ? true : false,
+                        isAssociatedEditorAssigned: true,
                         status: "UNDER_EDITOR_REVIEW",
                       }
                     })
                   });
+                }
+                
+                if (response.ok) {
+                  if (selectedAssignee?.roleLabel !== "Reviewer") {
+                    await fetch(`/api/update-assigned-journals/update-assigned-paper-status/${params.row.paperID}`, {
+                      method: "PATCH",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        data: {
+                          associateEditor: selectedValue,
+                          isAssociatedEditorAssigned: true,
+                          status: "UNDER_EDITOR_REVIEW",
+                        }
+                      })
+                    });
+                  }
  
-                  // Trigger a simulated notification email
-                  const matchedAE = assignees?.find((ae: any) => ae.name === selectedValue);
-                  if (matchedAE && matchedAE.email) {
+                  if (selectedAssignee?.email && selectedAssignee?.roleLabel !== "Reviewer") {
                     await fetch('/api/editor/notify-ae', {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({
-                        email: matchedAE.email,
-                        name: matchedAE.name,
+                        email: selectedAssignee.email,
+                        name: selectedAssignee.name,
                         paperTitle: params.row.title,
                         paperID: params.row.paperID,
                         category: paperCategory
@@ -880,15 +1035,23 @@ const JournalsTable = ({
  
                   Swal.fire({
                     icon: "success",
-                    title: "Associate Editor Assigned",
+                    title: "Submission Assigned",
                     text: `Paper assigned to ${selectedValue || "none"}.`,
                     timer: 1500,
                     showConfirmButton: false,
                   });
                   setFlag((prev: boolean) => !prev);
+                } else {
+                  const message = await response.text();
+                  throw new Error(message || "Failed to assign submission");
                 }
               } catch (err) {
                 console.error(err);
+                Swal.fire({
+                  icon: "error",
+                  title: "Assignment Failed",
+                  text: "This submission could not be assigned.",
+                });
               }
             }}
             style={{
@@ -904,14 +1067,8 @@ const JournalsTable = ({
               cursor: "pointer"
             }}
           >
-            <option value="">Select Associate Editor</option>
-            {assignees
-              ?.filter((ae: any) => {
-                if (session.data?.user?.role === "ASSOCIATE_EDITOR") {
-                  return ae.roleLabel === "Guest Editor" || ae.email === session.data?.user?.email;
-                }
-                return true;
-              })
+            <option value="">Select assignee</option>
+            {assignableUsers
               ?.map((ae: any) => {
                 const isMatch = ae.areaOfExpertise && paperCategory && 
                   (ae.areaOfExpertise.toLowerCase().includes(paperCategory.toLowerCase()) ||

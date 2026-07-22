@@ -57,8 +57,8 @@ export async function POST(request: Request) {
 
       // Get or create Author user
       const authorEmail = legacyPaper.authorEmail || "author@example.com";
-      let authorUser = await prisma.user.findUnique({
-        where: { email: authorEmail }
+      let authorUser = await prisma.user.findFirst({
+        where: { email: authorEmail, role: "AUTHOR" }
       });
 
       if (!authorUser) {

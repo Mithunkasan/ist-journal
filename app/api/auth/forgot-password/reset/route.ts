@@ -5,16 +5,21 @@ import bcrypt from "bcrypt";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { email, otp, password } = body;
+    const { email, otp, password, role } = body;
 
     if (!email || !otp || !password) {
       return new NextResponse("All fields are required", { status: 400 });
     }
 
-    const user = await prisma.user.findUnique({
-      where: {
-        email: email.toLowerCase().trim(),
-      },
+    const whereClause: any = {
+      email: email.toLowerCase().trim(),
+    };
+    if (role) {
+      whereClause.role = role;
+    }
+
+    const user = await prisma.user.findFirst({
+      where: whereClause,
     });
 
     if (!user) {

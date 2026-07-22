@@ -21,8 +21,8 @@ const JournalsTable = dynamic(() => import("@/components/ui/tables/JournalsTable
 
 const AssociateEditorDashboard = () => {
   const { t } = useLanguage();
+  const [allSubmissions, setAllSubmissions] = useState([]);
   const [papers, setPapers] = useState([]);
-  const [screeningPapers, setScreeningPapers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [flag, setFlag] = useState(false);
 
@@ -36,12 +36,12 @@ const AssociateEditorDashboard = () => {
     if (showLoader) setLoading(true);
 
     try {
-      const [papersRes, screeningRes] = await Promise.all([
-        axios.get("/api/associate-editor/papers"),
-        axios.get("/api/associate-editor/screening")
+      const [allSubmissionsRes, papersRes] = await Promise.all([
+        axios.get("/api/editor/papers"),
+        axios.get("/api/associate-editor/papers")
       ]);
+      setAllSubmissions(allSubmissionsRes.data);
       setPapers(papersRes.data);
-      setScreeningPapers(screeningRes.data);
     } catch (error) {
       console.error("Error fetching papers:", error);
     } finally {
@@ -58,7 +58,7 @@ const AssociateEditorDashboard = () => {
   }
 
   const stats = [
-    { title: t("ae.toscreen"), value: screeningPapers.length, icon: <Assignment sx={{ color: '#004b23' }} />, color: '#f0fdf4' },
+    { title: "All Submissions", value: allSubmissions.length, icon: <Assignment sx={{ color: '#004b23' }} />, color: '#f0fdf4' },
     { title: t("ae.mytrack"), value: papers.length, icon: <GroupWork sx={{ color: '#004b23' }} />, color: '#f0fdf4' },
     { title: t("ae.underreview"), value: papers.filter((p: any) => p.isReviewerAssigned).length, icon: <RateReview sx={{ color: '#004b23' }} />, color: '#f0fdf4' },
   ];
@@ -87,7 +87,7 @@ const AssociateEditorDashboard = () => {
 
       <Paper sx={{ p: 4, borderRadius: 4, boxShadow: '0 4px 20px rgba(0,0,0,0.05)', mb: 4 }}>
         <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>
-          {t("ae.newsubmissions")}
+          All Submissions
         </Typography>
         
         {loading ? (
@@ -96,8 +96,8 @@ const AssociateEditorDashboard = () => {
           </Box>
         ) : (
           <JournalsTable 
-            journalsPaper={screeningPapers} 
-            titles="Associate_Screening" 
+            journalsPaper={allSubmissions} 
+            titles="Associate_All_Submissions" 
             setFlag={setFlag} 
             flag={flag} 
             loadingSlice={loading}

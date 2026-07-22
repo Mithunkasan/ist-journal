@@ -17,6 +17,7 @@ export async function GET() {
 
     const whereClause: any = {
       associateEditor: session.user.name,
+      editorName: session.user.name,
       NOT: {
         status: "UNDER_EDITOR_REVIEW"
       }
