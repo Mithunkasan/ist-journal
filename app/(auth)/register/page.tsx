@@ -99,7 +99,8 @@ const RegisterPageContent = () => {
         });
         if (res.ok) {
           const data = await res.json();
-          if (data.exists) {
+          const isRoleRegistered = data.roles && data.roles.includes(formData.role);
+          if (isRoleRegistered) {
             setEmailError(
               lang === "ar"
                 ? "هذا البريد الإلكتروني مسجل بالفعل. يرجى استخدام بريد إلكتروني آخر."
@@ -115,7 +116,7 @@ const RegisterPageContent = () => {
     }, 400);
 
     return () => clearTimeout(checkEmail);
-  }, [formData.email, lang]);
+  }, [formData.email, formData.role, lang]);
 
   const handleNext = () => {
     if (activeStep === 0) {
@@ -162,6 +163,10 @@ const RegisterPageContent = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (emailError) {
+      setError(emailError);
+      return;
+    }
     setIsLoading(true);
     setError("");
 
@@ -233,7 +238,7 @@ const RegisterPageContent = () => {
       <div className="absolute top-4 left-4 z-50">
         <button
           type="button"
-          onClick={() => router.back()}
+          onClick={() => router.push("/")}
           className="flex items-center gap-1 px-3 py-2 rounded-md border border-white text-white bg-transparent text-sm font-medium hover:bg-white hover:text-[#004b23] transition-all duration-200 shadow-sm"
         >
           <ArrowBack sx={{ fontSize: 18 }} />

@@ -48,6 +48,8 @@ export default function ForgotPasswordPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [rolesToChoose, setRolesToChoose] = useState<string[]>([]);
+  const [selectedRole, setSelectedRole] = useState<string>("");
 
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,10 +61,53 @@ export default function ForgotPasswordPage() {
     setError("");
 
     try {
+      const checkRes = await fetch("/api/check-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+
+      if (!checkRes.ok) {
+        const errorText = await checkRes.text();
+        setError(errorText || (lang === "ar" ? "فشل التحقق من البريد الإلكتروني" : "Failed to check email"));
+        setIsLoading(false);
+        return;
+      }
+
+      const checkData = await checkRes.json();
+      if (!checkData.exists) {
+        setError(lang === "ar" ? "هذا البريد الإلكتروني غير مسجل." : "This email is not registered.");
+        setIsLoading(false);
+        return;
+      }
+
+      const roles = checkData.roles || [];
+      const hasBoth = roles.includes("AUTHOR") && roles.includes("REVIEWER");
+
+      if (hasBoth) {
+        setRolesToChoose(roles);
+        setSelectedRole("AUTHOR"); // default selection
+        setIsLoading(false);
+      } else {
+        const roleToSend = roles[0] || "AUTHOR"; // fallback
+        setSelectedRole(roleToSend);
+        await sendOtp(roleToSend);
+      }
+    } catch (err) {
+      setError(lang === "ar" ? "حدث خطأ غير متوقع" : "An unexpected error occurred");
+      setIsLoading(false);
+    }
+  };
+
+  const sendOtp = async (role: string) => {
+    setIsLoading(true);
+    setError("");
+
+    try {
       const res = await fetch("/api/auth/forgot-password/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email: email.trim(), role }),
       });
 
       if (res.ok) {
@@ -95,7 +140,7 @@ export default function ForgotPasswordPage() {
       const res = await fetch("/api/auth/forgot-password/verify-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, otp }),
+        body: JSON.stringify({ email, otp, role: selectedRole }),
       });
 
       if (res.ok) {
@@ -136,7 +181,7 @@ export default function ForgotPasswordPage() {
       const res = await fetch("/api/auth/forgot-password/reset", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, otp, password }),
+        body: JSON.stringify({ email, otp, password, role: selectedRole }),
       });
 
       if (res.ok) {
@@ -174,11 +219,14 @@ export default function ForgotPasswordPage() {
         <button
           type="button"
           onClick={() => {
-            if (step > 0 && step < 3) {
+            if (step === 1 && rolesToChoose.length > 0) {
+              setRolesToChoose([]);
+              setError("");
+            } else if (step > 0 && step < 3) {
               setStep(step - 1);
               setError("");
             } else {
-              router.push("/login");
+              router.push("/");
             }
           }}
           className="flex items-center gap-1 px-3 py-2 rounded-md border border-white text-white bg-transparent text-sm font-medium hover:bg-white hover:text-[#004b23] transition-all duration-200 shadow-sm"
@@ -232,7 +280,7 @@ export default function ForgotPasswordPage() {
               </Alert>
             )}
 
-            {step === 0 && (
+            {step === 0 && rolesToChoose.length === 0 && (
               <form onSubmit={handleSendOtp}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                   <Typography variant="body2" color="textSecondary" sx={{ mb: 1, textAlign: 'center' }}>
@@ -263,6 +311,87 @@ export default function ForgotPasswordPage() {
                     {isLoading 
                       ? (lang === "ar" ? "جاري الإرسال..." : "Sending...") 
                       : (lang === "ar" ? "إرسال رمز التحقق" : "Send Verification Code")}
+                  </Button>
+                </Box>
+              </form>
+            )}
+
+            {step === 0 && rolesToChoose.length > 0 && (
+              <form onSubmit={(e) => { e.preventDefault(); sendOtp(selectedRole); }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  <Typography variant="body1" sx={{ fontWeight: 600, mb: 1, textAlign: 'center', color: '#111827' }}>
+                    {lang === "ar" 
+                      ? "تم العثور على حسابين مرتبطين بهذا البريد الإلكتروني. يرجى اختيار نوع الحساب الذي ترغب في إعادة تعيين كلمة المرور له:" 
+                      : "We found two accounts associated with this email. Please select which account you want to reset:"}
+                  </Typography>
+
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} sm={6}>
+                      <Button
+                        fullWidth
+                        variant={selectedRole === "AUTHOR" ? "contained" : "outlined"}
+                        onClick={() => setSelectedRole("AUTHOR")}
+                        sx={{
+                          py: 2,
+                          borderRadius: 2,
+                          fontWeight: 700,
+                          bgcolor: selectedRole === "AUTHOR" ? '#004b23' : 'transparent',
+                          color: selectedRole === "AUTHOR" ? '#fff' : '#004b23',
+                          borderColor: '#004b23',
+                          '&:hover': {
+                            bgcolor: selectedRole === "AUTHOR" ? '#003318' : 'rgba(0, 75, 35, 0.04)',
+                            borderColor: '#004b23',
+                          }
+                        }}
+                      >
+                        {lang === "ar" ? "حساب المؤلف" : "Author Account"}
+                      </Button>
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <Button
+                        fullWidth
+                        variant={selectedRole === "REVIEWER" ? "contained" : "outlined"}
+                        onClick={() => setSelectedRole("REVIEWER")}
+                        sx={{
+                          py: 2,
+                          borderRadius: 2,
+                          fontWeight: 700,
+                          bgcolor: selectedRole === "REVIEWER" ? '#004b23' : 'transparent',
+                          color: selectedRole === "REVIEWER" ? '#fff' : '#004b23',
+                          borderColor: '#004b23',
+                          '&:hover': {
+                            bgcolor: selectedRole === "REVIEWER" ? '#003318' : 'rgba(0, 75, 35, 0.04)',
+                            borderColor: '#004b23',
+                          }
+                        }}
+                      >
+                        {lang === "ar" ? "حساب المراجع" : "Reviewer Account"}
+                      </Button>
+                    </Grid>
+                  </Grid>
+
+                  <Button 
+                    fullWidth 
+                    type="submit"
+                    variant="contained" 
+                    disabled={isLoading}
+                    sx={{ py: 1.5, bgcolor: '#004b23', borderRadius: 2, fontWeight: 700, mt: 1 }}
+                  >
+                    {isLoading 
+                      ? (lang === "ar" ? "جاري الإرسال..." : "Sending...") 
+                      : (lang === "ar" ? "تأكيد وإرسال الرمز" : "Confirm & Send Code")}
+                  </Button>
+
+                  <Button
+                    fullWidth
+                    variant="text"
+                    onClick={() => {
+                      setRolesToChoose([]);
+                      setError("");
+                    }}
+                    sx={{ color: '#666', fontWeight: 600 }}
+                  >
+                    {lang === "ar" ? "تغيير البريد الإلكتروني" : "Change Email"}
                   </Button>
                 </Box>
               </form>

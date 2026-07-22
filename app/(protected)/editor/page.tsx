@@ -68,7 +68,7 @@ const EditorDashboard = () => {
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2, mb: 4 }}>
         <Typography variant="h4" sx={{ fontWeight: 800, color: '#004b23' }}>
-          Editor-in-Chief Dashboard
+          Chief Editor Dashboard
         </Typography>
         <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
           <Button
@@ -83,7 +83,7 @@ const EditorDashboard = () => {
             onClick={() => router.push("/editor/associate-register")}
             sx={{ bgcolor: '#004b23', '&:hover': { bgcolor: '#003318' }, borderRadius: 2 }}
           >
-            Add Sub Editor
+            Add Associate Editor
           </Button>
           <Button
             variant="contained"

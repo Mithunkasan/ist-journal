@@ -67,3 +67,22 @@ export const truncate = (str: string, length: number) => {
   if (!str || str.length <= length) return str;
   return `${str.slice(0, length)}...`;
 };
+
+export function formatPaperId(paperID: number | string | null | undefined): string {
+  if (paperID === null || paperID === undefined) return "";
+  const num = typeof paperID === "string" ? parseInt(paperID, 10) : paperID;
+  if (isNaN(num)) return String(paperID);
+  return `IST${String(num).padStart(9, "0")}`;
+}
+
+export function parsePaperId(paperIdStr: string | null | undefined): number | null {
+  if (!paperIdStr) return null;
+  const cleaned = paperIdStr.trim().toUpperCase();
+  if (cleaned.startsWith("IST")) {
+    const num = parseInt(cleaned.slice(3), 10);
+    return isNaN(num) ? null : num;
+  }
+  const num = parseInt(cleaned, 10);
+  return isNaN(num) ? null : num;
+}
+

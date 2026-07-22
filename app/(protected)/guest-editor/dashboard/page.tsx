@@ -85,7 +85,7 @@ const GuestEditorDashboard = () => {
         ) : (
           <JournalsTable 
             journalsPaper={papers} 
-            titles="AE_Track_Queue" 
+            titles="Guest_Assigned_Queue" 
             setFlag={setFlag} 
             flag={flag} 
             loadingSlice={loading}

@@ -8,6 +8,7 @@ import {
   getLeastLoadedActiveEditor,
 } from "@/lib/workflow";
 import { Status, UserRole, UserStatus } from "@prisma/client";
+import { formatPaperId } from "@/lib/utils/utils";
 
 type SubmitSession = {
   user?: {
@@ -17,27 +18,150 @@ type SubmitSession = {
   };
 } | null;
 
-async function getUniquePaperId(requestedPaperID: unknown) {
-  const requested = Number(requestedPaperID);
-  let candidate =
-    Number.isInteger(requested) && requested > 0 && requested <= 2147483647
-      ? requested
-      : Math.floor(100000000 + Math.random() * 900000000);
+async function getUniquePaperId(requestedPaperID?: unknown) {
+  const lastSubmission = await prisma.submission.findFirst({
+    where: {
+      paperID: {
+        lt: 100000000,
+      },
+    },
+    orderBy: {
+      paperID: "desc",
+    },
+    select: {
+      paperID: true,
+    },
+  });
 
-  for (let attempt = 0; attempt < 20; attempt += 1) {
-    const existing = await prisma.submission.findUnique({
-      where: { paperID: candidate },
+  const lastSubmittedJournal = await prisma.submittedJournals.findFirst({
+    where: {
+      paperID: {
+        lt: 100000000,
+      },
+    },
+    orderBy: {
+      paperID: "desc",
+    },
+    select: {
+      paperID: true,
+    },
+  });
+
+  const lastAssignedJournal = await prisma.assignedJournals.findFirst({
+    where: {
+      paperID: {
+        lt: 100000000,
+      },
+    },
+    orderBy: {
+      paperID: "desc",
+    },
+    select: {
+      paperID: true,
+    },
+  });
+
+  const lastPublished = await prisma.published.findFirst({
+    where: {
+      paperID: {
+        lt: 100000000,
+      },
+    },
+    orderBy: {
+      paperID: "desc",
+    },
+    select: {
+      paperID: true,
+    },
+  });
+
+  const lastRejected = await prisma.rejectedJournal.findFirst({
+    where: {
+      paperID: {
+        lt: 100000000,
+      },
+    },
+    orderBy: {
+      paperID: "desc",
+    },
+    select: {
+      paperID: true,
+    },
+  });
+
+  const lastArchive = await prisma.archives.findFirst({
+    where: {
+      paperID: {
+        lt: 100000000,
+      },
+    },
+    orderBy: {
+      paperID: "desc",
+    },
+    select: {
+      paperID: true,
+    },
+  });
+
+  const maxIds = [
+    lastSubmission ? lastSubmission.paperID : 0,
+    lastSubmittedJournal ? (lastSubmittedJournal.paperID || 0) : 0,
+    lastAssignedJournal ? (lastAssignedJournal.paperID || 0) : 0,
+    lastPublished ? (lastPublished.paperID || 0) : 0,
+    lastRejected ? (lastRejected.paperID || 0) : 0,
+    lastArchive ? (lastArchive.paperID || 0) : 0,
+  ];
+
+  let nextId = Math.max(...maxIds) + 1;
+  if (nextId < 1) {
+    nextId = 1;
+  }
+
+  while (true) {
+    const existingSubmission = await prisma.submission.findUnique({
+      where: { paperID: nextId },
       select: { id: true },
     });
 
-    if (!existing) {
-      return candidate;
-    }
+    const existingJournal = await prisma.submittedJournals.findFirst({
+      where: { paperID: nextId },
+      select: { id: true },
+    });
 
-    candidate = Math.floor(100000000 + Math.random() * 900000000);
+    const existingAssigned = await prisma.assignedJournals.findFirst({
+      where: { paperID: nextId },
+      select: { id: true },
+    });
+
+    const existingPublished = await prisma.published.findFirst({
+      where: { paperID: nextId },
+      select: { id: true },
+    });
+
+    const existingRejected = await prisma.rejectedJournal.findFirst({
+      where: { paperID: nextId },
+      select: { id: true },
+    });
+
+    const existingArchive = await prisma.archives.findFirst({
+      where: { paperID: nextId },
+      select: { id: true },
+    });
+
+    if (
+      !existingSubmission &&
+      !existingJournal &&
+      !existingAssigned &&
+      !existingPublished &&
+      !existingRejected &&
+      !existingArchive
+    ) {
+      break;
+    }
+    nextId++;
   }
 
-  throw new Error("Unable to generate a unique paper ID.");
+  return nextId;
 }
 
 function getFirstCommaSeparatedValue(value: string) {
@@ -71,8 +195,8 @@ async function getSubmittingUser({
   }
 
   const primaryName = getFirstCommaSeparatedValue(authorNames) || "Author";
-  const existingUser = await prisma.user.findUnique({
-    where: { email: primaryEmail },
+  const existingUser = await prisma.user.findFirst({
+    where: { email: primaryEmail, role: UserRole.AUTHOR },
   });
 
   const user = existingUser
@@ -288,7 +412,7 @@ export async function POST(request: any) {
     }
 
     // 6. Send Notification & Email without blocking the submission response
-    const notificationMsg = `Dear ${submittingUser.name || "Author"},\n\nYour manuscript titled "${title}" has been successfully submitted and is awaiting editorial initial screening.\n\nPaper ID: ${parsedPaperID}\n\nBest regards,\nEditorial Board`;
+    const notificationMsg = `Dear ${submittingUser.name || "Author"},\n\nYour manuscript titled "${title}" has been successfully submitted and is awaiting editorial initial screening.\n\nPaper ID: ${formatPaperId(parsedPaperID)}\n\nBest regards,\nEditorial Board`;
     void createNotificationAndEmail(
       submittingUser.id,
       submittingUser.email,
@@ -300,7 +424,7 @@ export async function POST(request: any) {
     });
 
     if (assignedEditor) {
-      const editorNotificationMsg = `Dear ${assignedEditor.name || "Editor"},\n\nA new manuscript titled "${title}" has been submitted and assigned to you for editorial review.\n\nPaper ID: ${parsedPaperID}\nAuthor(s): ${authorNames}\n\nPlease log in to your Editor Dashboard to review the submission and assign reviewers.\n\nBest regards,\nEditorial Office`;
+      const editorNotificationMsg = `Dear ${assignedEditor.name || "Editor"},\n\nA new manuscript titled "${title}" has been submitted and assigned to you for editorial review.\n\nPaper ID: ${formatPaperId(parsedPaperID)}\nAuthor(s): ${authorNames}\n\nPlease log in to your Editor Dashboard to review the submission and assign reviewers.\n\nBest regards,\nEditorial Office`;
 
       void createNotificationAndEmail(
         assignedEditor.id,

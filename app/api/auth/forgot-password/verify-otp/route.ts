@@ -4,16 +4,21 @@ import prisma from "@/lib/prisma";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { email, otp } = body;
+    const { email, otp, role } = body;
 
     if (!email || !otp) {
       return new NextResponse("Email and OTP are required", { status: 400 });
     }
 
-    const user = await prisma.user.findUnique({
-      where: {
-        email: email.toLowerCase().trim(),
-      },
+    const whereClause: any = {
+      email: email.toLowerCase().trim(),
+    };
+    if (role) {
+      whereClause.role = role;
+    }
+
+    const user = await prisma.user.findFirst({
+      where: whereClause,
     });
 
     if (!user) {

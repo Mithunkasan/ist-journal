@@ -137,19 +137,8 @@ export async function GET() {
       });
     });
 
-    const subEditors = await prisma.user.findMany({
-      where: { role: "ASSOCIATE_EDITOR" },
-      select: { name: true }
-    });
-    const subEditorNames = new Set(subEditors.map(u => u.name).filter(Boolean));
-
+    // Chief Editor sees ALL paper submissions (no filtering by assignment)
     const papers = Array.from(papersByPaperId.values())
-      .filter((paper: any) => {
-        if (paper.associateEditor && subEditorNames.has(paper.associateEditor)) {
-          return false;
-        }
-        return true;
-      })
       .sort(
         (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
       );

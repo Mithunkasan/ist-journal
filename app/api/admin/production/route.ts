@@ -163,7 +163,7 @@ export async function POST(request: Request) {
 
     // 6. Notify Author
     const authorUser = await prisma.user.findFirst({
-      where: { email: { contains: paper.authorEmail || "" } }
+      where: { email: { contains: paper.authorEmail || "" }, role: "AUTHOR" }
     });
     const targetUserId = authorUser ? authorUser.id : session.user.id;
 

@@ -5,16 +5,21 @@ import { sendEmailNotification } from "@/lib/mail";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { email } = body;
+    const { email, role } = body;
 
     if (!email) {
       return new NextResponse("Email address is required", { status: 400 });
     }
 
-    const user = await prisma.user.findUnique({
-      where: {
-        email: email.toLowerCase().trim(),
-      },
+    const whereClause: any = {
+      email: email.toLowerCase().trim(),
+    };
+    if (role) {
+      whereClause.role = role;
+    }
+
+    const user = await prisma.user.findFirst({
+      where: whereClause,
     });
 
     if (!user) {

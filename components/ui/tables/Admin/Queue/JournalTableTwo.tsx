@@ -111,13 +111,25 @@ const JournalTableTwo = ({
     title === "Submitted Papers"
       ? Object?.keys(journalPaper[0] || {})
       : journals
-  )?.map((data: any) => ({
-    field: data,
-    headName: data,
-    width: 100,
-    align: "left",
-    headerAlign: "left",
-  }));
+  )?.map((data: any) => {
+    const isStatus = data === "status";
+    return {
+      field: data,
+      headerName: data.replace(/([A-Z])/g, " $1").replace(/^./, (str: string) => str.toUpperCase()),
+      width: 150,
+      align: "left",
+      headerAlign: "left",
+      renderCell: isStatus
+        ? (params: any) => {
+            const val = params.value;
+            if (val === "SUBMITTED" || val === "ASSIGNED_TO_EDITOR" || val === "EDITOR_SCREENING") {
+              return "Paper Submitted";
+            }
+            return val ? val.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()) : "";
+          }
+        : undefined,
+    };
+  });
 
   columns.shift();
 

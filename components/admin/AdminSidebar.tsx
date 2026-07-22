@@ -37,12 +37,6 @@ const menuItems = [
   { textKey: "sb.settings", icon: <Settings />, href: "/admin/dashboard/settings" },
 ];
 
-const roleMenuItems = [
-  { textKey: "role.admin", icon: <PersonAdd />, href: "/admin/editorregister?role=admin" },
-  { textKey: "role.editor", icon: <PersonAdd />, href: "/admin/editorregister?role=editor" },
-  { textKey: "role.reviewer", icon: <PersonAdd />, href: "/admin/editorregister?role=reviewer" },
-  { textKey: "role.user", icon: <PersonAdd />, href: "/admin/editorregister?role=user" },
-];
 
 const editorialMenuItems = [
   { textKey: "sb.registereditor", icon: <PersonAdd />, href: "/admin/editorregister?role=editor" },
@@ -82,48 +76,6 @@ const SidebarContent = () => {
       <List sx={{ px: 2 }}>
         {menuItems.map((item) => {
           const isActive = pathname === item.href;
-          return (
-            <ListItem key={item.textKey} disablePadding sx={{ mb: 1 }}>
-              <Link
-                href={item.href}
-                style={{ textDecoration: "none", color: "inherit", width: "100%" }}
-              >
-                <ListItemButton
-                  sx={{
-                    borderRadius: 2,
-                    bgcolor: isActive ? "#f0fdf4" : "transparent",
-                    color: isActive ? "#004b23" : "#666",
-                    "&:hover": { bgcolor: "#f0fdf4", color: "#004b23" },
-                  }}
-                >
-                  <ListItemIcon sx={{ color: "inherit", minWidth: 40 }}>
-                    {item.icon}
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={t(item.textKey)}
-                    primaryTypographyProps={{ fontWeight: isActive ? 700 : 500 }}
-                  />
-                </ListItemButton>
-              </Link>
-            </ListItem>
-          );
-        })}
-      </List>
-
-      <Divider sx={{ my: 1 }} />
-
-      <Box sx={{ p: 2.5, pt: 1 }}>
-        <Typography
-          variant="overline"
-          sx={{ fontWeight: 700, color: "#64748b", letterSpacing: 1.2 }}
-        >
-          {t("sb.userroles")}
-        </Typography>
-      </Box>
-      <List sx={{ px: 2 }}>
-        {roleMenuItems.map((item) => {
-          const itemRole = item.href.split("role=")[1];
-          const isActive = pathname === "/admin/editorregister" && activeRole === itemRole;
           return (
             <ListItem key={item.textKey} disablePadding sx={{ mb: 1 }}>
               <Link

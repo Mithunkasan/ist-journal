@@ -116,8 +116,8 @@ export default auth(async (req) => {
     }
     const encodedCallbackUrl = encodeURIComponent(callbackUrl);
     
-    // Redirect to /admin if it's an admin path, otherwise to /login
-    const redirectUrl = isAdminPath ? "/admin" : "/login";
+    // Redirect to /admin if it's an admin path, /editor-login if it's an editor path, otherwise to /login
+    const redirectUrl = isAdminPath ? "/admin" : (isEditorPath ? "/editor-login" : "/login");
     return Response.redirect(new URL(`${redirectUrl}?callbackUrl=${encodedCallbackUrl}`, nextUrl));
   }
 

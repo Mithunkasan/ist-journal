@@ -17,7 +17,7 @@ export async function GET() {
 
     return NextResponse.json(user);
   } catch (error) {
-    console.error("Error fetching Sub Editor selection:", error);
+    console.error("Error fetching Associate Editor selection:", error);
     return new NextResponse("Internal Error", { status: 500 });
   }
 }

@@ -23,6 +23,7 @@ import {
 import axios from "axios";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
+import { formatPaperId } from "@/lib/utils/utils";
 
 // Icons
 import TableChartRoundedIcon from "@mui/icons-material/TableChartRounded";
@@ -169,7 +170,12 @@ const SubmissionsPage = () => {
             {papers.map((paper: any) => {
               // Status Color configuration
               let statusColor = "warning";
-              const statusLabel = paper.status || "Pending";
+              let statusLabel = paper.status || "Pending";
+              if (statusLabel === "SUBMITTED" || statusLabel === "ASSIGNED_TO_EDITOR" || statusLabel === "EDITOR_SCREENING") {
+                statusLabel = "Paper Submitted";
+              } else {
+                statusLabel = statusLabel.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase());
+              }
               if (statusLabel.toLowerCase() === "published" || paper.isPublished === true) {
                 statusColor = "success";
               } else if (statusLabel.toLowerCase() === "rejected") {
@@ -209,7 +215,7 @@ const SubmissionsPage = () => {
                             borderRadius: 1.5,
                           }}
                         >
-                          ID: {paper.paperID}
+                          ID: {formatPaperId(paper.paperID)}
                         </Typography>
                         <Chip
                           label={statusLabel}
@@ -283,27 +289,33 @@ const SubmissionsPage = () => {
                       </Box>
                     </CardContent>
                     <CardActions sx={{ px: 3, pb: 3, pt: 0, justifyContent: "space-between" }}>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          router.push(`/author/update/${paper.paperID}`);
-                        }}
-                        sx={{
-                          color: "#004b23",
-                          borderColor: "#004b23",
-                          fontWeight: 700,
-                          borderRadius: 2,
-                          textTransform: "none",
-                          "&:hover": {
-                            borderColor: "#003d1c",
-                            bgcolor: "rgba(0, 75, 35, 0.05)",
-                          },
-                        }}
-                      >
-                        Update Details
-                      </Button>
+                      {(() => {
+                        const editableStatuses = ["SUBMITTED", "ASSIGNED_TO_EDITOR", "EDITOR_SCREENING"];
+                        const isEditable = editableStatuses.includes(paper.status ? String(paper.status).toUpperCase() : "");
+                        return isEditable && (
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push(`/author/update/${paper.paperID}`);
+                            }}
+                            sx={{
+                              color: "#004b23",
+                              borderColor: "#004b23",
+                              fontWeight: 700,
+                              borderRadius: 2,
+                              textTransform: "none",
+                              "&:hover": {
+                                borderColor: "#003d1c",
+                                bgcolor: "rgba(0, 75, 35, 0.05)",
+                              },
+                            }}
+                          >
+                            Update Details
+                          </Button>
+                        );
+                      })()}
                       <Typography
                         variant="button"
                         sx={{
@@ -354,7 +366,7 @@ const SubmissionsPage = () => {
         >
           <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
             <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.7)", fontWeight: 700, letterSpacing: 0.5 }}>
-              SUBMISSION ID: {selectedPaper?.paperID}
+              SUBMISSION ID: {formatPaperId(selectedPaper?.paperID)}
             </Typography>
             <Typography variant="h6" component="h2" sx={{ fontWeight: 800, pr: 4, lineHeight: 1.3 }}>
               {selectedPaper?.title}
@@ -377,7 +389,11 @@ const SubmissionsPage = () => {
             <Grid item xs={12}>
               <Stack direction="row" spacing={1.5} flexWrap="wrap" useFlexGap sx={{ mb: 2 }}>
                 <Chip
-                  label={`Status: ${selectedPaper?.status || "Pending"}`}
+                  label={`Status: ${
+                    selectedPaper?.status === "SUBMITTED" || selectedPaper?.status === "ASSIGNED_TO_EDITOR" || selectedPaper?.status === "EDITOR_SCREENING"
+                      ? "Paper Submitted"
+                      : (selectedPaper?.status || "Pending").replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())
+                  }`}
                   color={
                     (selectedPaper?.status || "pending").toLowerCase() === "published"
                       ? "success"
@@ -702,27 +718,33 @@ const SubmissionsPage = () => {
           </Grid>
         </DialogContent>
         <DialogActions sx={{ p: 2.5, bgcolor: "#f1f3f5", justifyContent: "space-between" }}>
-          <Button
-            variant="outlined"
-            onClick={() => {
-              setIsDetailOpen(false);
-              router.push(`/author/update/${selectedPaper?.paperID}`);
-            }}
-            sx={{
-              color: "#004b23",
-              borderColor: "#004b23",
-              px: 3,
-              borderRadius: 2,
-              textTransform: "none",
-              fontWeight: 600,
-              "&:hover": {
-                borderColor: "#003d1c",
-                bgcolor: "rgba(0, 75, 35, 0.05)",
-              },
-            }}
-          >
-            Update Details
-          </Button>
+          {(() => {
+            const editableStatuses = ["SUBMITTED", "ASSIGNED_TO_EDITOR", "EDITOR_SCREENING"];
+            const isEditable = editableStatuses.includes(selectedPaper?.status ? String(selectedPaper.status).toUpperCase() : "");
+            return isEditable && (
+              <Button
+                variant="outlined"
+                onClick={() => {
+                  setIsDetailOpen(false);
+                  router.push(`/author/update/${selectedPaper?.paperID}`);
+                }}
+                sx={{
+                  color: "#004b23",
+                  borderColor: "#004b23",
+                  px: 3,
+                  borderRadius: 2,
+                  textTransform: "none",
+                  fontWeight: 600,
+                  "&:hover": {
+                    borderColor: "#003d1c",
+                    bgcolor: "rgba(0, 75, 35, 0.05)",
+                  },
+                }}
+              >
+                Update Details
+              </Button>
+            );
+          })()}
           <Button
             onClick={() => setIsDetailOpen(false)}
             variant="contained"

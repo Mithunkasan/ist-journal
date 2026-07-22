@@ -18,39 +18,75 @@ export default {
     error: "/login",
   },
   events: {
-    // You can add event handlers here if needed
+    // Optional: Log successful sign-ins
     async signIn({ user }) {
-      // Optional: Log successful sign-ins
       console.log(`User signed in: ${user.email}`);
     },
   },
   providers: [
     Credentials({
-      async authorize(credentials: { email?: string; password?: string }) {
+      async authorize(credentials: { email?: string; password?: string; role?: string }) {
         const email = credentials.email?.trim().toLowerCase();
         const password = credentials.password?.trim();
+        const role = credentials.role?.trim().toUpperCase();
 
         if (!email || !password) {
           throw new Error("Please enter an email and password");
         }
 
-        // check to see if user exists
-        const user = await prisma.user.findUnique({
-          where: {
-            email,
-          },
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            emailVerified: true,
-            image: true,
-            role: true,
-            Status: true,
-            password: true,
-            hashedPassword: true,
-          },
-        });
+        let user = null;
+
+        // If role is explicitly provided, find the user matching both email and role
+        if (role) {
+          user = await prisma.user.findFirst({
+            where: {
+              email,
+              role: role as any,
+            },
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              emailVerified: true,
+              image: true,
+              role: true,
+              Status: true,
+              password: true,
+              hashedPassword: true,
+            },
+          });
+        }
+
+        // If no user found yet, find all matching emails and verify password
+        if (!user) {
+          const users = await prisma.user.findMany({
+            where: {
+              email,
+            },
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              emailVerified: true,
+              image: true,
+              role: true,
+              Status: true,
+              password: true,
+              hashedPassword: true,
+            },
+          });
+
+          for (const u of users) {
+            const passwordHash = u.password ?? u.hashedPassword;
+            if (passwordHash) {
+              const match = await bcrypt.compare(password, passwordHash);
+              if (match) {
+                user = u;
+                break;
+              }
+            }
+          }
+        }
 
         const passwordHash = user?.password ?? user?.hashedPassword;
 

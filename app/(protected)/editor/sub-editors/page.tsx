@@ -20,7 +20,7 @@ const SubEditorsManagement = () => {
       const response = await axios.get("/api/get-associate");
       setSubEditors(response.data);
     } catch (error) {
-      console.error("Failed to fetch sub-editors", error);
+      console.error("Failed to fetch Associate Editors", error);
     } finally {
       setLoading(false);
     }
@@ -55,7 +55,7 @@ const SubEditorsManagement = () => {
           onClick={() => router.push("/editor/associate-register")}
         >
           <AddCircleIcon />
-          Add Sub Editor
+          Add Associate Editor
         </button>
       </Box>
 
@@ -69,7 +69,7 @@ const SubEditorsManagement = () => {
           textAlign: "center",
         }}
       >
-        List Of Sub Editors
+        List Of Associate Editors
       </Typography>
 
       <Paper sx={{ maxWidth: "100%", overflow: "hidden", borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
@@ -79,7 +79,7 @@ const SubEditorsManagement = () => {
           </Box>
         ) : subEditors.length === 0 ? (
           <Typography sx={{ textAlign: "center", py: 5, color: "#666" }}>
-            No Sub Editors found.
+            No Associate Editors found.
           </Typography>
         ) : (
           <>

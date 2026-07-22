@@ -32,7 +32,7 @@ const PendingSubEditorsPage = () => {
         const response = await axios.get("/api/admin/users/pending?role=ASSOCIATE_EDITOR");
         setUsers(response.data);
       } catch (error) {
-        console.error("Error fetching pending sub-editors:", error);
+        console.error("Error fetching pending Associate Editors:", error);
       } finally {
         setLoading(false);
       }
@@ -49,7 +49,7 @@ const PendingSubEditorsPage = () => {
       });
       setRefreshFlag((prev) => !prev);
     } catch (error) {
-      console.error(`Failed to ${action.toLowerCase()} sub editor`, error);
+      console.error(`Failed to ${action.toLowerCase()} Associate Editor`, error);
     }
   };
 
@@ -64,7 +64,7 @@ const PendingSubEditorsPage = () => {
       </button>
 
       <Typography variant="h4" sx={{ fontWeight: 800, color: "#004b23", marginBlock: "30px", textAlign: "center" }}>
-        Pending Sub Editor Registrations
+        Pending Associate Editor Registrations
       </Typography>
 
       <Paper sx={{ p: 4, borderRadius: 4, boxShadow: "0 4px 20px rgba(0,0,0,0.05)" }}>
@@ -74,7 +74,7 @@ const PendingSubEditorsPage = () => {
           </Box>
         ) : users.length === 0 ? (
           <Typography sx={{ textAlign: "center", py: 5, color: "#666" }}>
-            No pending sub editors awaiting approval.
+            No pending Associate Editors awaiting approval.
           </Typography>
         ) : (
           <TableContainer>

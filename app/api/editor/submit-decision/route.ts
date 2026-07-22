@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     if (!submission) {
       // Fallback submission creation
       const authorUser = await prisma.user.findFirst({
-        where: { email: { contains: paper.authorEmail || "" } }
+        where: { email: { contains: paper.authorEmail || "" }, role: "AUTHOR" }
       });
 
       let authorProfile = authorUser ? await prisma.author.findUnique({ where: { userId: authorUser.id } }) : null;
@@ -121,7 +121,7 @@ export async function POST(request: Request) {
 
       // Send simulated email & Notification
       const authorUser = await prisma.user.findFirst({
-        where: { email: { contains: paper.authorEmail || "" } }
+        where: { email: { contains: paper.authorEmail || "" }, role: "AUTHOR" }
       });
       const targetUserId = authorUser ? authorUser.id : session.user.id;
 
@@ -181,7 +181,7 @@ export async function POST(request: Request) {
 
       // Send simulated email & Notification
       const authorUser = await prisma.user.findFirst({
-        where: { email: { contains: paper.authorEmail || "" } }
+        where: { email: { contains: paper.authorEmail || "" }, role: "AUTHOR" }
       });
       const targetUserId = authorUser ? authorUser.id : session.user.id;
 
@@ -263,7 +263,7 @@ export async function POST(request: Request) {
 
       // Send simulated email & Notification
       const authorUser = await prisma.user.findFirst({
-        where: { email: { contains: paper.authorEmail || "" } }
+        where: { email: { contains: paper.authorEmail || "" }, role: "AUTHOR" }
       });
       const targetUserId = authorUser ? authorUser.id : session.user.id;
 

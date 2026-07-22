@@ -32,6 +32,7 @@ import { useRouter } from "next/navigation";
 import { RoleGate } from "@/components/auth/role-gate";
 import { UserRole } from "@prisma/client";
 import axios from "axios";
+import { formatPaperId } from "@/lib/utils/utils";
 
 interface PaperData {
   id: number;
@@ -88,6 +89,13 @@ const SubmissionTrackingPage = () => {
       default:
         return "primary";
     }
+  };
+
+  const getStatusLabel = (status: string) => {
+    if (status === "SUBMITTED" || status === "ASSIGNED_TO_EDITOR" || status === "EDITOR_SCREENING") {
+      return "Paper Submitted";
+    }
+    return status ? status.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()) : "";
   };
 
   // Stats calculation
@@ -183,25 +191,26 @@ const SubmissionTrackingPage = () => {
               {tabValue === 0 && (
                 <TableContainer>
                   <Table>
-                    <TableHead sx={{ bgcolor: '#f1f5f9' }}>
+                     <TableHead sx={{ bgcolor: '#f1f5f9' }}>
                       <TableRow>
                         <TableCell sx={{ fontWeight: 700 }}>Paper ID</TableCell>
                         <TableCell sx={{ fontWeight: 700 }}>Title</TableCell>
                         <TableCell sx={{ fontWeight: 700 }}>Authors</TableCell>
                         <TableCell sx={{ fontWeight: 700 }}>Category/Type</TableCell>
                         <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
+                        <TableCell sx={{ fontWeight: 700 }}>Submission Date</TableCell>
                         <TableCell sx={{ fontWeight: 700 }}>Last Updated</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       {papers.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={6} align="center">No submissions found</TableCell>
+                          <TableCell colSpan={7} align="center">No submissions found</TableCell>
                         </TableRow>
                       ) : (
                         papers.map((paper) => (
                           <TableRow key={paper.id} hover>
-                            <TableCell>{paper.paperID}</TableCell>
+                            <TableCell>{formatPaperId(paper.paperID)}</TableCell>
                             <TableCell sx={{ fontWeight: 600 }}>{paper.title}</TableCell>
                             <TableCell>{paper.authorNames || paper.authorEmail}</TableCell>
                             <TableCell>
@@ -210,12 +219,13 @@ const SubmissionTrackingPage = () => {
                             </TableCell>
                             <TableCell>
                               <Chip
-                                label={paper.status}
+                                label={getStatusLabel(paper.status)}
                                 size="small"
                                 color={getStatusColor(paper.status) as any}
                                 sx={{ fontWeight: 600, borderRadius: 1.5 }}
                               />
                             </TableCell>
+                            <TableCell>{paper.createdAt ? new Date(paper.createdAt).toLocaleString() : "N/A"}</TableCell>
                             <TableCell>{new Date(paper.updatedAt).toLocaleDateString()}</TableCell>
                           </TableRow>
                         ))
@@ -246,7 +256,7 @@ const SubmissionTrackingPage = () => {
                       ) : (
                         papers.map((paper) => (
                           <TableRow key={paper.id} hover>
-                            <TableCell>{paper.paperID}</TableCell>
+                            <TableCell>{formatPaperId(paper.paperID)}</TableCell>
                             <TableCell sx={{ fontWeight: 600 }}>{paper.title}</TableCell>
                             <TableCell>
                               <Chip
@@ -269,7 +279,7 @@ const SubmissionTrackingPage = () => {
                             </TableCell>
                             <TableCell>
                               <Chip
-                                label={paper.status}
+                                label={getStatusLabel(paper.status)}
                                 size="small"
                                 color={getStatusColor(paper.status) as any}
                                 sx={{ fontWeight: 600, borderRadius: 1.5 }}
