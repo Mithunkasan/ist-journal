@@ -4,7 +4,9 @@ import { useCurrentRole } from "@/lib/hooks/use-current-role";
 import { UserRole } from "@prisma/client";
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
 import { useRouter } from "next/navigation";
-import { Container } from "@mui/material";
+import { Container, Box, CircularProgress } from "@mui/material";
+
+import { useSession } from "next-auth/react";
 
 interface RoleGateProps {
   children: React.ReactNode;
@@ -14,14 +16,23 @@ interface RoleGateProps {
 
 export const RoleGate = ({ children, allowedRole, allowedRoles }: RoleGateProps) => {
   const router = useRouter();
-
+  const session = useSession();
   const role = useCurrentRole();
 
   const handleRegisterClick = () => {
     router.back();
   };
 
+  if (session.status === "loading") {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+        <CircularProgress sx={{ color: '#004b23' }} />
+      </Box>
+    );
+  }
+
   const hasAccess = role && (allowedRoles ? allowedRoles.includes(role) : role === allowedRole);
+  console.log("ROLE GATE RENDER:", { role, allowedRole, allowedRoles, hasAccess });
 
   if (!hasAccess) {
     return (

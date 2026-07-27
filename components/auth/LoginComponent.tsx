@@ -9,7 +9,9 @@ import {
   DEFAULT_ADMIN_REDIRECT,
   DEFAULT_EDITOR_REDIRECT,
   DEFAULT_ASSOCIATE_EDITOR_REDIRECT,
-  DEFAULT_REVIEWER_REDIRECT
+  DEFAULT_REVIEWER_REDIRECT,
+  DEFAULT_AUTHOR_REDIRECT,
+  DEFAULT_GUEST_EDITOR_REDIRECT
 } from "@/routes";
 import { 
   RemoveRedEye, 
@@ -113,8 +115,12 @@ const LoginPage = () => {
         return DEFAULT_EDITOR_REDIRECT;
       case "ASSOCIATE_EDITOR":
         return DEFAULT_ASSOCIATE_EDITOR_REDIRECT;
+      case "GUEST_EDITOR":
+        return DEFAULT_GUEST_EDITOR_REDIRECT;
       case "REVIEWER":
         return DEFAULT_REVIEWER_REDIRECT;
+      case "AUTHOR":
+        return DEFAULT_AUTHOR_REDIRECT;
       default:
         return DEFAULT_LOGIN_REDIRECT;
     }
@@ -174,8 +180,7 @@ const LoginPage = () => {
         return;
       }
 
-      router.replace(result?.url || callbackUrl);
-      router.refresh();
+      window.location.href = result?.url || callbackUrl;
     } catch (error) {
       console.error("Error during login:", error);
       setLoginError(lang === "ar" ? "حدث خطأ غير متوقع أثناء تسجيل الدخول" : "An unexpected error occurred during login");
@@ -207,9 +212,9 @@ const LoginPage = () => {
   useEffect(() => {
     if (status === "authenticated" && session?.user?.role) {
       const redirectPath = getRedirectPath();
-      router.push(redirectPath);
+      window.location.href = redirectPath;
     }
-  }, [session, status, getRedirectPath, router]);
+  }, [session, status, getRedirectPath]);
 
   // Prevent authenticated users from seeing login page
   if (status === "authenticated") {

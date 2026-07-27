@@ -158,6 +158,7 @@ export default {
       return baseUrl;
     },
     async session({ token, session }) {
+      console.log("SESSION CALLBACK - TOKEN:", JSON.stringify(token), "SESSION:", JSON.stringify(session));
       if (token.sub && session.user) {
         session.user.id = token.sub;
       }
@@ -167,6 +168,7 @@ export default {
       return session;
     },
     async jwt({ token, user }) {
+      console.log("JWT CALLBACK - TOKEN:", JSON.stringify(token), "USER:", JSON.stringify(user));
       if (user) {
         token.role = user.role;
       }
