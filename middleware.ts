@@ -58,6 +58,7 @@ import {
 
 export default auth(async (req) => {
   const { nextUrl } = req;
+  console.log("MIDDLEWARE AUTH OBJECT:", JSON.stringify(req.auth));
   const isLoggedIn = !!req.auth;
 
   const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
