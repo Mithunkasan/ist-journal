@@ -269,6 +269,25 @@ export async function POST(request: Request) {
       }
     }
 
+    // Forward the submitted review details to all Chief Editors (role = "EDITOR")
+    const chiefEditorsList = await prisma.user.findMany({
+      where: { role: "EDITOR", Status: "ACTIVE" }
+    });
+
+    for (const chief of chiefEditorsList) {
+      if (chief.email) {
+        const forwardSubject = `Submitted Peer Review Report (ID: ${parsedPaperID})`;
+        const forwardBody = `Dear EIC ${chief.name},\n\nA peer review report has been submitted for manuscript ID ${parsedPaperID} ("${submission.title}").\n\nSubmitted By: Reviewer - ${session.user.name || "Reviewer"}\nRecommendation: ${recommendation}\n\nEvaluation Details & Comments:\n------------------------------------------\nComments to Author:\n${commentsToAuthor}\n\nConfidential Comments to Editor:\n${commentsToEditor || "None"}\n------------------------------------------\n\nPlease log in to your EIC Dashboard to analyze the reviews.\n\nBest regards,\nEditorial Office`;
+        await createNotificationAndEmail(
+          chief.id,
+          chief.email,
+          forwardSubject,
+          forwardBody,
+          parsedPaperID
+        );
+      }
+    }
+
     return NextResponse.json({ message: "Review submitted successfully" });
   } catch (error) {
     console.error("Error submitting peer review:", error);

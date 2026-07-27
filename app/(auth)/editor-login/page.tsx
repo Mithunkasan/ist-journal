@@ -49,6 +49,7 @@ const EditorLoginPageContent = () => {
       const result = await signIn("credentials", {
         email: formData.email.trim(),
         password: formData.password.trim(),
+        role: "EDITOR",
         redirect: false,
       });
 

@@ -32,7 +32,7 @@ const ImportantDates = () => {
         {t("dates.title")}
       </Typography>
 
-      <Grid container spacing={2} sx={{ paddingInline: "30px" }}>
+      <Grid container spacing={2} sx={{ paddingInline: { xs: "0px", sm: "15px", md: "30px" } }}>
         {homePageContent?.importantDates?.map((data, index) => (
           <Grid item xs={12} sm={6} md={4} lg={4} key={index}>
             <DemoPaper
@@ -40,14 +40,15 @@ const ImportantDates = () => {
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                gap: "20px",
+                gap: { xs: "12px", sm: "20px" },
                 paddingTop: "25px",
-                height: "300px",
+                height: "auto",
+                minHeight: { xs: "220px", sm: "260px", md: "300px" },
                 transition: "all 0.3s",
                 ":hover": {
                   backgroundColor: "#007200",
                   color: "#fff !important",
-                  transform: lang === "ar" ? "translateY(-10px) translateX(-10px)" : "translateY(-10px) translateX(10px)",
+                  transform: { xs: "translateY(-6px)", md: lang === "ar" ? "translateY(-10px) translateX(-10px)" : "translateY(-10px) translateX(10px)" },
                 },
               }}
               square={false}

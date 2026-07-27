@@ -13,7 +13,7 @@ export default function Footer() {
       sx={{
         backgroundColor: "#004B23",
         marginTop: "20px",
-        paddingBlock: "50px",
+        paddingBlock: { xs: "30px", md: "50px" },
         color: "#fff",
         width: "100%",
         justifySelf: "end",

@@ -21,7 +21,7 @@ const About = () => {
       </div>
 
       {/* Right Side - Content */}
-      <div className="md:w-1/2 w-full p-8 space-y-6">
+      <div className="md:w-1/2 w-full p-4 md:p-8 space-y-6">
         <h2 className="text-3xl font-bold text-black">{t("aboutpage.title")}</h2>
         <p className="text-gray-700 leading-relaxed text-lg">
           {t("aboutpage.desc")}

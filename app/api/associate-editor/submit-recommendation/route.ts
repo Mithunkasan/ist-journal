@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { sendEmailNotification } from "@/lib/mail";
+import { createNotificationAndEmail } from "@/lib/workflow";
 
 export async function POST(request: Request) {
   const session = await auth();
@@ -59,12 +60,15 @@ export async function POST(request: Request) {
 
     for (const editor of editors) {
       if (editor.email) {
-        await sendEmailNotification({
-          to: editor.email,
-          subject: `[IST Journal] AE Recommendation Submitted for Manuscript ID ${parsedPaperID}`,
-          body: `Dear EIC ${editor.name},\n\nAssociate Editor ${session.user.name} has analyzed all peer review reports and submitted their synthesis recommendation for manuscript ID ${parsedPaperID} ("${paper?.title || "Scientific Paper"}").\n\nRecommendation: ${recommendation}\n\nThe manuscript has been moved to "Awaiting Final Editor Decision" stage. Please log in to your Editor Dashboard to make the final decision.\n\nBest regards,\nEditorial Office`,
-          templateParams: { paperID: parsedPaperID, aeName: session.user.name, recommendation }
-        });
+        const forwardSubject = `AE Recommendation Submitted for Manuscript ID ${parsedPaperID}`;
+        const forwardBody = `Dear EIC ${editor.name},\n\nAssociate Editor ${session.user.name} has analyzed all peer review reports and submitted their synthesis recommendation for manuscript ID ${parsedPaperID} ("${paper?.title || "Scientific Paper"}").\n\nRecommendation: ${recommendation}\n\nEvaluation Details & Justification:\n------------------------------------------\nJustification / Synthesis Comments:\n${comments}\n------------------------------------------\n\nThe manuscript has been moved to "Awaiting Final Editor Decision" stage. Please log in to your Editor Dashboard to make the final decision.\n\nBest regards,\nEditorial Office`;
+        await createNotificationAndEmail(
+          editor.id,
+          editor.email,
+          forwardSubject,
+          forwardBody,
+          parsedPaperID
+        );
       }
     }
 

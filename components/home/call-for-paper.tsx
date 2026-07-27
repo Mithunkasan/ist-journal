@@ -26,7 +26,7 @@ const CallForPaper = () => {
         alt="Telescope"
         width={300}
         height={200}
-        style={{ objectFit: "contain" }}
+        style={{ objectFit: "contain", maxWidth: "100%", height: "auto" }}
         priority
       />
       <Typography

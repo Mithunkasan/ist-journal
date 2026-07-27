@@ -106,7 +106,7 @@ const DashboardLayout = ({ children, roleName, rolePath }: DashboardLayoutProps)
         </Toolbar>
       </AppBar>
 
-      <Box component="main" sx={{ flexGrow: 1, py: 4 }}>
+      <Box component="main" sx={{ flexGrow: 1, py: { xs: 2, md: 4 } }}>
         <Container maxWidth="lg">
           {children}
         </Container>

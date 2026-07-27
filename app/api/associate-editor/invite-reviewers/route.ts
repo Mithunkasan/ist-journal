@@ -7,7 +7,7 @@ import { Status } from "@prisma/client";
 export async function POST(request: Request) {
   const session = await auth();
 
-  if (!session?.user?.id || (session.user.role !== "EDITOR" && session.user.role !== "ADMIN")) {
+  if (!session?.user?.id || (session.user.role !== "EDITOR" && session.user.role !== "ASSOCIATE_EDITOR" && session.user.role !== "ADMIN")) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
 

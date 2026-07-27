@@ -51,11 +51,8 @@ const EditorQueue = () => {
     const FetchAllAssignedJournalPaper = async () => {
       try {
         const response = await axios.get("/api/editor/papers");
-        const filteredJournalByStatuses = response.data?.filter((data: any) => {
-          return data?.status !== "REJECTED" && data?.status !== "PUBLISHED";
-        });
         setFlag(false);
-        setFilterJournalByStatus(filteredJournalByStatuses);
+        setFilterJournalByStatus(response.data);
       } catch (error) {
         console.error("Error fetching journal records:", error);
       }

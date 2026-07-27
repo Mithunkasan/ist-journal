@@ -16,7 +16,15 @@ export async function POST(
 
   const { id } = params;
   const body = await request.json();
-  const { decision, comments } = body;
+  const {
+    decision,
+    scopeMatch,
+    plagiarismRate,
+    formattingStatus,
+    ethicalCompliance,
+    paperQuality,
+    comments
+  } = body;
 
   try {
     const paperID = parseInt(id);
@@ -37,6 +45,26 @@ export async function POST(
     if (!paper) {
       return new NextResponse("Paper not found", { status: 404 });
     }
+
+    const forwardToChiefEditors = async () => {
+      const chiefEditors = await prisma.user.findMany({
+        where: { role: "EDITOR", Status: "ACTIVE" }
+      });
+
+      for (const chief of chiefEditors) {
+        if (chief.email) {
+          const forwardSubject = `Initial Screening Check: Manuscript ID ${paperID}`;
+          const forwardBody = `Dear EIC ${chief.name},\n\nAn Initial Editorial Screening Check has been submitted for manuscript ID ${paperID} ("${paper.title}").\n\nSubmitted By: ${session.user.role} - ${session.user.name || "Editor"}\nScreening Decision: ${decision}\n\nEvaluation Details & Marks:\n------------------------------------------\nJournal Scope Match: ${scopeMatch || "N/A"}\nBasic Paper Quality Check: ${paperQuality || "N/A"}\nPlagiarism Rate (Similarity Index): ${plagiarismRate !== undefined ? `${plagiarismRate}%` : "N/A"}\nFormatting Validation: ${formattingStatus || "N/A"}\nEthical Compliance: ${ethicalCompliance || "N/A"}\n\nComments / Guidelines:\n${comments || "None"}\n------------------------------------------\n\nBest regards,\nEditorial Office`;
+          await createNotificationAndEmail(
+            chief.id,
+            chief.email,
+            forwardSubject,
+            forwardBody,
+            paperID
+          );
+        }
+      }
+    };
 
     // Fetch the relational Submission
     let submission = await prisma.submission.findUnique({
@@ -151,6 +179,8 @@ export async function POST(
         paperID
       );
 
+      await forwardToChiefEditors();
+
       return NextResponse.json({ message: "Forwarded successfully" });
 
     } else if (decision === "RETURN") {
@@ -200,6 +230,8 @@ export async function POST(
         message,
         paperID
       );
+
+      await forwardToChiefEditors();
 
       return NextResponse.json({ message: "Returned successfully" });
 
@@ -273,6 +305,8 @@ export async function POST(
         message,
         paperID
       );
+
+      await forwardToChiefEditors();
 
       return NextResponse.json({ message: "Desk rejected successfully" });
     }
