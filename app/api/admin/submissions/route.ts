@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 export async function GET() {
   const session = await auth();
 
-  if (!session?.user?.id || (session.user.role !== "EDITOR" && session.user.role !== "ASSOCIATE_EDITOR")) {
+  if (!session?.user?.id || session.user.role !== "ADMIN") {
     return new NextResponse("Unauthorized", { status: 401 });
   }
 
@@ -35,6 +35,10 @@ export async function GET() {
           category: true,
           updatedAt: true,
           createdAt: true,
+          coverLetterUrl: true,
+          supportingFilesUrl: true,
+          doi: true,
+          orcid: true,
         },
       }),
       prisma.assignedJournals.findMany({
@@ -58,6 +62,10 @@ export async function GET() {
           category: true,
           updatedAt: true,
           createdAt: true,
+          coverLetterUrl: true,
+          supportingFilesUrl: true,
+          doi: true,
+          orcid: true,
           user: {
             select: {
               name: true,
@@ -68,6 +76,7 @@ export async function GET() {
             select: {
               name: true,
               id: true,
+              email: true,
             },
           },
         },
@@ -101,6 +110,7 @@ export async function GET() {
     const reviewersByPaperId = new Map<number, any[]>();
 
     reviewAssignments.forEach((submission) => {
+      if (submission.paperID === null || submission.paperID === undefined) return;
       const reviewers = submission.reviewAssignments
         .map((assignment) => assignment.reviewer.user)
         .filter(Boolean)
@@ -128,44 +138,18 @@ export async function GET() {
 
       papersByPaperId.set(paper.paperID, {
         ...paper,
-        reviewers: reviewers?.length ? reviewers : paper.reviewers,
+        reviewers: reviewers?.length ? reviewers : (paper.reviewers || []),
       });
     });
 
-    const chiefEditors = await prisma.user.findMany({
-      where: { role: "EDITOR" },
-      select: { name: true }
-    });
-    const chiefEditorNames = new Set(chiefEditors.map(u => u.name).filter(Boolean));
-
-    const isAssociateEditor = session.user.role === "ASSOCIATE_EDITOR";
-
     const papers = Array.from(papersByPaperId.values())
-      .map((paper: any) => {
-        if (isAssociateEditor) {
-          const hasActiveAssignment = paper.associateEditor || paper.isAssociatedEditorAssigned || paper.isReviewerAssigned || (paper.reviewers && paper.reviewers.length > 0);
-          const isAssignedByChief = hasActiveAssignment && paper.editorName && chiefEditorNames.has(paper.editorName);
-          if (isAssignedByChief) {
-            return {
-              ...paper,
-              associateEditor: null,
-              isAssociatedEditorAssigned: false,
-              isReviewerAssigned: false,
-              reviewers: [],
-              status: "SUBMITTED",
-              isAssignedByChief: true
-            };
-          }
-        }
-        return paper;
-      })
       .sort(
         (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
       );
 
     return NextResponse.json(papers);
   } catch (error) {
-    console.error("Error fetching editor papers:", error);
+    console.error("Error fetching admin submissions:", error);
     return new NextResponse("Internal Error", { status: 500 });
   }
 }

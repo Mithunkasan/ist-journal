@@ -1149,7 +1149,12 @@ const JournalsTable = ({
       });
     }
 
-    if (!isSubEditor) {
+    const canInviteReviewers = 
+      session.data?.user?.role === "EDITOR" || 
+      session.data?.user?.role === "ASSOCIATE_EDITOR" || 
+      session.data?.user?.role === "ADMIN";
+
+    if (canInviteReviewers) {
       columns.push({
         field: "Select Reviewers",
         headerName: "Select Reviewers",

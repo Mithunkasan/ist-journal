@@ -30,6 +30,26 @@ export async function POST(request: Request) {
       return new NextResponse("Paper not found", { status: 404 });
     }
 
+    const forwardToChiefEditors = async () => {
+      const chiefEditors = await prisma.user.findMany({
+        where: { role: "EDITOR", Status: "ACTIVE" }
+      });
+
+      for (const chief of chiefEditors) {
+        if (chief.email) {
+          const forwardSubject = `Final EIC Decision: Manuscript ID ${parsedPaperID}`;
+          const forwardBody = `Dear EIC ${chief.name},\n\nA Final Editorial Decision has been processed for manuscript ID ${parsedPaperID} ("${paper.title}").\n\nProcessed By: Chief Editor - ${session.user.name || "Chief Editor"}\nDecision: ${decision}\n\nDecision Letter / Evaluation Feedback:\n------------------------------------------\n${comments}\n------------------------------------------\n\nBest regards,\nEditorial Office`;
+          await createNotificationAndEmail(
+            chief.id,
+            chief.email,
+            forwardSubject,
+            forwardBody,
+            parsedPaperID
+          );
+        }
+      }
+    };
+
     // Fetch relational Submission
     let submission = await prisma.submission.findUnique({
       where: { paperID: parsedPaperID }
@@ -134,6 +154,8 @@ export async function POST(request: Request) {
         parsedPaperID
       );
 
+      await forwardToChiefEditors();
+
       return NextResponse.json({ message: "Paper accepted successfully" });
 
     } else if (decision === "MINOR_REVISION" || decision === "MAJOR_REVISION") {
@@ -193,6 +215,8 @@ export async function POST(request: Request) {
         emailBody,
         parsedPaperID
       );
+
+      await forwardToChiefEditors();
 
       return NextResponse.json({ message: "Revision request submitted successfully" });
 
@@ -275,6 +299,8 @@ export async function POST(request: Request) {
         emailBody,
         parsedPaperID
       );
+
+      await forwardToChiefEditors();
 
       return NextResponse.json({ message: "Rejection decision processed successfully" });
     }

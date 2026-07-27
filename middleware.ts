@@ -77,6 +77,7 @@ export default auth(async (req) => {
   const isReviewerPath = nextUrl.pathname.startsWith("/reviewer");
   const isAssociateEditorPath = nextUrl.pathname.startsWith("/associate-editor");
   const isGuestEditorPath = nextUrl.pathname.startsWith("/guest-editor");
+  const isAuthorPath = nextUrl.pathname.startsWith("/author");
 
   // API Authentication routes and callbacks bypass
   if (isApiAuthRoute || isAuthCallback) {
@@ -143,6 +144,10 @@ export default auth(async (req) => {
     }
 
     if (isGuestEditorPath && userRole !== "GUEST_EDITOR") {
+      return Response.redirect(new URL("/unauthorized", nextUrl));
+    }
+
+    if (isAuthorPath && userRole !== "AUTHOR") {
       return Response.redirect(new URL("/unauthorized", nextUrl));
     }
   }

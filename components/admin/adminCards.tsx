@@ -104,7 +104,7 @@ const AdminCards = () => {
             backgroundColor: "rgba(217,217,217,0.25)",
             paddingInline: "15px",
             borderRadius: "5px",
-            maxWidth: "200px",
+            width: "100%",
             border: "1px solid #38B000",
             cursor: "pointer",
           }}
@@ -157,7 +157,7 @@ const AdminCards = () => {
             backgroundColor: "rgba(217,217,217,0.25)",
             paddingInline: "15px",
             borderRadius: "5px",
-            maxWidth: "200px",
+            width: "100%",
             border: "1px solid #38B000",
             cursor: "pointer",
           }}
@@ -209,7 +209,7 @@ const AdminCards = () => {
             backgroundColor: "rgba(217,217,217,0.25)",
             paddingInline: "15px",
             borderRadius: "5px",
-            maxWidth: "200px",
+            width: "100%",
             border: "1px solid #38B000",
             cursor: "pointer",
           }}
@@ -245,7 +245,7 @@ const AdminCards = () => {
             backgroundColor: "rgba(217,217,217,0.25)",
             paddingInline: "15px",
             borderRadius: "5px",
-            maxWidth: "200px",
+            width: "100%",
             border: "1px solid #38B000",
             cursor: "pointer",
           }}

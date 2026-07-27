@@ -25,9 +25,10 @@ const ChiefEditor = () => {
             display: "flex",
             gap: "10px",
             marginBottom: "30px",
-            fontSize: "25px",
+            fontSize: { xs: "18px", sm: "22px", md: "25px" },
             fontWeight: 700,
             alignItems: "center",
+            flexWrap: "wrap",
             transition: "all 0.4s ease-out",
           }}
         >
@@ -73,7 +74,7 @@ const ChiefEditor = () => {
             <Typography
               sx={{
                 marginBottom: "5px",
-                fontSize: "20px",
+                fontSize: { xs: "16px", sm: "18px", md: "20px" },
                 fontWeight: "bold",
               }}
             >

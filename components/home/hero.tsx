@@ -32,16 +32,21 @@ const Hero = () => {
         lg={6}
         sx={{ display: "flex", justifyContent: "center", mb: { xs: 3, md: 0 } }}
       >
-        <Image
-          src={"/uploads/journalimage.webp"}
-          alt="IST Journal — International Scientific and Technological Journal Cover"
-          width={200}
-          height={280}
-          style={{
-            boxShadow: "-8px 12px 6px 2px rgba(0,0,0,0.75)",
-          }}
-          priority
-        />
+        <Box sx={{ width: { xs: "160px", sm: "200px", md: "200px" }, height: { xs: "220px", sm: "280px", md: "280px" }, position: "relative" }}>
+          <Image
+            src={"/uploads/journalimage.webp"}
+            alt="IST Journal — International Scientific and Technological Journal Cover"
+            width={200}
+            height={280}
+            style={{
+              boxShadow: "-8px 12px 6px 2px rgba(0,0,0,0.75)",
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+            }}
+            priority
+          />
+        </Box>
       </Grid>
 
       <Grid
@@ -55,6 +60,8 @@ const Hero = () => {
           flexDirection: "column",
           gap: "20px",
           justifyContent: "center",
+          textAlign: { xs: "center", md: "left" },
+          alignItems: { xs: "center", md: "flex-start" },
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", color: "#fff", gap: "20px" }}>

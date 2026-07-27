@@ -40,7 +40,7 @@ const SecondaryNavbar = () => {
 
   return (
     <Box sx={{ borderBottom: "1px solid #dcdcdc", position: "sticky", top: "0px", backgroundColor: "#EEEEEE", zIndex: 5 }}>
-      <Container sx={{ paddingBlock: "20px", display: "flex", gap: "20px", justifyContent: "space-around", flexWrap: "wrap" }}>
+      <Container sx={{ paddingBlock: { xs: "12px", sm: "16px", md: "20px" }, display: "flex", gap: { xs: "10px", sm: "16px", md: "20px" }, justifyContent: "space-around", flexWrap: "wrap", rowGap: { xs: "8px", sm: "10px" }, fontSize: { xs: "13px", sm: "14px", md: "inherit" } }}>
 
         {/* Articles & Issues */}
         <Box>

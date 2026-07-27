@@ -30,6 +30,14 @@ const Navbar = () => {
     { href: "/contact", title: t("nav.contact") },
   ];
 
+  const mobileAuthLinks = session.data
+    ? []
+    : [
+        { href: "/login", title: t("nav.signin") },
+        { href: "/register?role=AUTHOR", title: t("nav.signup") + " (Author)" },
+        { href: "/register?role=REVIEWER", title: t("nav.signup") + " (Reviewer)" },
+      ];
+
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
 
   const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -107,6 +115,13 @@ const Navbar = () => {
                 sx={{ display: { xs: "block", md: "none" }, color: "#004B23" }}
               >
                 {navLinks.map((link) => (
+                  <MenuItem key={link.href} onClick={handleCloseNavMenu}>
+                    <Link href={link.href} style={{ color: "#004B23", textDecoration: "none" }}>
+                      {link.title}
+                    </Link>
+                  </MenuItem>
+                ))}
+                {mobileAuthLinks.map((link) => (
                   <MenuItem key={link.href} onClick={handleCloseNavMenu}>
                     <Link href={link.href} style={{ color: "#004B23", textDecoration: "none" }}>
                       {link.title}
@@ -209,27 +224,29 @@ const Navbar = () => {
             </Box>
 
             {/* Language toggle + Auth button */}
-            <Box sx={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: { xs: "8px", sm: "12px" }, flexShrink: 0 }}>
               <button
                 onClick={toggleLang}
-                className="flex items-center gap-1 px-3 py-2 rounded-md border border-[#004b23] text-[#004b23] text-sm font-medium hover:bg-[#004b23] hover:text-white transition-all duration-200"
+                className="flex items-center gap-1 px-2 py-1.5 sm:px-3 sm:py-2 rounded-md border border-[#004b23] text-[#004b23] text-xs sm:text-sm font-medium hover:bg-[#004b23] hover:text-white transition-all duration-200"
                 title={lang === "en" ? "التبديل إلى العربية" : "Switch to English"}
               >
-                <LanguageIcon sx={{ fontSize: 18 }} />
-                {lang === "en" ? "العربية" : "English"}
+                <LanguageIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
+                <span className="hidden sm:inline">{lang === "en" ? "العربية" : "English"}</span>
+                <span className="sm:hidden">{lang === "en" ? "ع" : "EN"}</span>
               </button>
 
               {session.data ? (
                 <button
-                  className="bg-[#004b23] text-[#fff] w-[100px] px-4 py-3 rounded-md font-medium hover:text-[#004b23] hover:bg-[#ffff] hover:border border-[#004b23] transition-all duration-200 ease-linear"
+                  className="bg-[#004b23] text-[#fff] px-3 py-2 sm:px-4 sm:py-3 rounded-md font-medium text-xs sm:text-sm hover:text-[#004b23] hover:bg-[#ffff] hover:border border-[#004b23] transition-all duration-200 ease-linear"
                   onClick={handleLogOut}
                 >
                   {t("nav.signout")}
                 </button>
               ) : (
                 <>
+                  {/* Sign In / Sign Up hidden on mobile — accessible via hamburger menu */}
                   <button
-                    className="bg-transparent text-[#004b23] border border-[#004b23] w-[100px] px-4 py-3 rounded-md font-medium hover:bg-[#004b23] hover:text-[#fff] transition-all duration-200 ease-linear"
+                    className="hidden lg:block bg-transparent text-[#004b23] border border-[#004b23] w-[100px] px-4 py-3 rounded-md font-medium hover:bg-[#004b23] hover:text-[#fff] transition-all duration-200 ease-linear"
                     onClick={handleLoginPage}
                   >
                     {t("nav.signin")}
@@ -240,7 +257,7 @@ const Navbar = () => {
                     aria-haspopup="true"
                     aria-expanded={signUpAnchorEl ? 'true' : undefined}
                     onClick={handleSignUpClick}
-                    className="bg-[#004b23] text-[#fff] w-[100px] px-4 py-3 rounded-md font-medium hover:text-[#004b23] hover:bg-[#ffff] hover:border border-[#004b23] transition-all duration-200 ease-linear"
+                    className="hidden lg:block bg-[#004b23] text-[#fff] w-[100px] px-4 py-3 rounded-md font-medium hover:text-[#004b23] hover:bg-[#ffff] hover:border border-[#004b23] transition-all duration-200 ease-linear"
                   >
                     {t("nav.signup")}
                   </button>

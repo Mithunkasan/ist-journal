@@ -46,7 +46,7 @@ const ArchivePage = () => {
   ];
 
   return (
-    <div className={`max-w-5xl mx-auto p-8 my-10 bg-white shadow-lg rounded-xl ${lang === "ar" ? "rtl" : "ltr"}`}>
+    <div className={`max-w-5xl mx-auto p-4 md:p-8 my-4 md:my-10 bg-white shadow-lg rounded-xl ${lang === "ar" ? "rtl" : "ltr"}`}>
       <h1 className="text-3xl font-bold text-[#004B23] border-b-2 border-[#004B23] pb-4 mb-8">
         {lang === "en" ? "Journal Archive" : "أرشيف المجلة"}
       </h1>

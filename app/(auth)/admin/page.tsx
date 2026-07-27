@@ -49,6 +49,7 @@ const AdminLoginPageContent = () => {
       const result = await signIn("credentials", {
         email: formData.email.trim(),
         password: formData.password.trim(),
+        role: "ADMIN",
         redirect: false,
       });
 
