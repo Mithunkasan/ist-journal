@@ -12,6 +12,18 @@ export async function GET(
       return new NextResponse("File ID is required", { status: 400 });
     }
 
+    const info = request.nextUrl.searchParams.get("info");
+    if (info === "true") {
+      const fileRecord = await prisma.uploadedFile.findUnique({
+        where: { id },
+        select: { filename: true, mimeType: true }
+      });
+      if (!fileRecord) {
+        return new NextResponse("File not found", { status: 404 });
+      }
+      return NextResponse.json(fileRecord);
+    }
+
     const fileRecord = await prisma.uploadedFile.findUnique({
       where: { id },
     });

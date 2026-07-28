@@ -16,8 +16,6 @@ export async function GET() {
     });
 
     const whereClause: any = {
-      associateEditor: session.user.name,
-      editorName: session.user.name,
       NOT: {
         status: "UNDER_EDITOR_REVIEW"
       }
@@ -25,6 +23,11 @@ export async function GET() {
 
     if (user?.selectedPaperId) {
       whereClause.paperID = user.selectedPaperId;
+    } else {
+      whereClause.OR = [
+        { associateEditor: session.user.name },
+        { editorName: session.user.name }
+      ];
     }
 
     const papers = await prisma.assignedJournals.findMany({

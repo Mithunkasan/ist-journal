@@ -21,6 +21,7 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import RecommendIcon from "@mui/icons-material/Recommend";
 import Swal from "sweetalert2";
+import { useSession } from "next-auth/react";
 
 interface AERecommendationModalProps {
   open: boolean;
@@ -30,6 +31,11 @@ interface AERecommendationModalProps {
 }
 
 export const AERecommendationModal = ({ open, onClose, paper, onSuccess }: AERecommendationModalProps) => {
+  const { data: session } = useSession();
+  const userRole = session?.user?.role;
+  const isChiefEditor = userRole === "EDITOR";
+  const roleLabel = isChiefEditor ? "Chief Editor" : userRole === "GUEST_EDITOR" ? "Guest Editor" : "Associate Editor";
+
   const [recommendation, setRecommendation] = useState("Accept");
   const [comments, setComments] = useState("");
   const [reviews, setReviews] = useState<any[]>([]);
@@ -137,7 +143,7 @@ export const AERecommendationModal = ({ open, onClose, paper, onSuccess }: AERec
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 2 }}>
           <Box>
             <Typography variant="h5" sx={{ fontWeight: 800, color: "#004b23", mb: 0.5 }}>
-              Submit AE Recommendation
+              {isChiefEditor ? "Submit Chief Editor Feedback" : `Submit ${roleLabel} Recommendation`}
             </Typography>
             <Typography variant="body2" color="textSecondary" sx={{ fontWeight: 600 }}>
               Manuscript ID: {paper.paperID} | Title: &quot;{paper.title}&quot;
@@ -220,13 +226,13 @@ export const AERecommendationModal = ({ open, onClose, paper, onSuccess }: AERec
 
         {/* 2. Synthesis and Recommendation Form */}
         <Typography variant="subtitle1" sx={{ fontWeight: 800, color: "#333", mb: 2 }}>
-          ✍️ My Recommendation
+          ✍️ {isChiefEditor ? "My Feedback & Decision" : "My Recommendation"}
         </Typography>
 
         <Box sx={{ mb: 3 }}>
           <FormControl fullWidth sx={{ mb: 3 }}>
             <FormLabel sx={{ fontWeight: 700, color: "#333", mb: 1, fontSize: "14px" }}>
-              My Synthesis Recommendation <span style={{ color: "red" }}>*</span>
+              {isChiefEditor ? "My Decision Recommendation" : "My Synthesis Recommendation"} <span style={{ color: "red" }}>*</span>
             </FormLabel>
             <Select
               value={recommendation}
@@ -244,10 +250,10 @@ export const AERecommendationModal = ({ open, onClose, paper, onSuccess }: AERec
           <Box sx={{ mb: 3 }}>
             <TextField
               fullWidth
-              label="Justification & Synthesis Comments *"
+              label={isChiefEditor ? "Feedback & Comments *" : "Justification & Synthesis Comments *"}
               multiline
               rows={4}
-              placeholder="Provide a synthesis of all reviewers' feedback and explain the rationale behind your recommendation to the Editor-in-Chief..."
+              placeholder={isChiefEditor ? "Provide your feedback and evaluation comments on the manuscript..." : "Provide a synthesis of all reviewers' feedback and explain the rationale behind your recommendation to the Editor-in-Chief..."}
               value={comments}
               onChange={(e) => setComments(e.target.value)}
               variant="outlined"
@@ -282,7 +288,7 @@ export const AERecommendationModal = ({ open, onClose, paper, onSuccess }: AERec
               fontWeight: 700
             }}
           >
-            Submit Recommendation
+            {isChiefEditor ? "Submit Feedback" : "Submit Recommendation"}
           </Button>
         </Box>
       </Box>

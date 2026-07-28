@@ -1279,49 +1279,51 @@ const JournalsTable = ({
       });
     }
 
+  }
+
+  if (titles === "AE_Track_Queue" || titles === "Guest_Assigned_Queue" || titles === "Editor_Queue") {
     columns.push({
-      field: "AE Recommendation",
-      headerName: "AE Recommendation",
+      field: "Submit Feedback",
+      headerName: "Submit Feedback",
       headerAlign: "center",
       width: 220,
       renderCell: (params: any) => {
         const status = params.row.status;
         const isSelected = selectedPaperId === params.row.paperID;
+        const isSubEditor = session.data?.user?.role === "ASSOCIATE_EDITOR" || session.data?.user?.role === "GUEST_EDITOR";
+        const needsOwnershipLock = (titles === "AE_Track_Queue") && isSubEditor;
+        const isDisabled = needsOwnershipLock && !isSelected;
         
-        if (status === "DECISION_PENDING") {
+        const isFinished = status === "ACCEPTED" || status === "REJECTED" || status === "PUBLISHED";
+        
+        if (!isFinished) {
           return (
             <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
               <Button 
                 variant="contained" 
                 size="small" 
-                disabled={isSubEditor && !isSelected}
+                disabled={isDisabled}
                 onClick={() => {
                   setSelectedRecomPaper(params.row);
                   setIsAERecomOpen(true);
                 }}
                 sx={{
-                  bgcolor: isSubEditor && !isSelected ? "#ccc" : "#7b1fa2",
-                  '&:hover': { bgcolor: isSubEditor && !isSelected ? "#ccc" : "#4a148c" },
+                  bgcolor: isDisabled ? "#ccc" : "#004b23",
+                  '&:hover': { bgcolor: isDisabled ? "#ccc" : "#003d1c" },
                   borderRadius: "6px",
                   textTransform: "none",
                   fontWeight: 600,
                   color: "#fff"
                 }}
               >
-                Submit AE Recommendation
+                Submit Feedback
               </Button>
             </Box>
           );
-        } else if (status === "REVISIONS_REQUESTED" || status === "ACCEPTED" || status === "REJECTED" || status === "PUBLISHED") {
-          return (
-            <Typography variant="body2" sx={{ color: "green", fontWeight: 700, textAlign: "center", width: "100%" }}>
-              Recommendation Submitted
-            </Typography>
-          );
         } else {
           return (
-            <Typography variant="body2" sx={{ color: "#666", textAlign: "center", width: "100%" }}>
-              Under Peer Review
+            <Typography variant="body2" sx={{ color: "green", fontWeight: 700, textAlign: "center", width: "100%" }}>
+              Feedback Submitted
             </Typography>
           );
         }
