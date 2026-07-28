@@ -1,5 +1,97 @@
 [
   {
+    "id": 1785229274886,
+    "timestamp": "2026-07-28T09:01:10.410Z",
+    "to": "chiefeditor@ist.com",
+    "subject": "[IST Journal] Chief Editor Recommendation/Feedback Submitted for Manuscript ID 3",
+    "body": "Dear EIC Chief Editor,\n\nChief Editor Chief Editor has analyzed all peer review reports and submitted their synthesis recommendation/feedback for manuscript ID 3 (\"Quantum Computing\").\n\nRecommendation: Accept\n\nEvaluation Details & Justification/Feedback:\n------------------------------------------\nFeedback / Synthesis Comments:\nasfdasasdffdf\n------------------------------------------\n\nThe manuscript has been moved to \"Awaiting Final Editor Decision\" stage. Please log in to your Editor Dashboard to make the final decision.\n\nBest regards,\nEditorial Office",
+    "templateParams": {
+      "paperID": 3
+    }
+  },
+  {
+    "id": 1785229195608,
+    "timestamp": "2026-07-28T08:59:48.294Z",
+    "to": "chiefeditor@ist.com",
+    "subject": "[IST Journal] Chief Editor Recommendation/Feedback Submitted for Manuscript ID 3",
+    "body": "Dear EIC Chief Editor,\n\nChief Editor Chief Editor has analyzed all peer review reports and submitted their synthesis recommendation/feedback for manuscript ID 3 (\"Quantum Computing\").\n\nRecommendation: Accept\n\nEvaluation Details & Justification/Feedback:\n------------------------------------------\nFeedback / Synthesis Comments:\ngdsdjdhgsfhsdgjfhsdgfjhsdgj\n------------------------------------------\n\nThe manuscript has been moved to \"Awaiting Final Editor Decision\" stage. Please log in to your Editor Dashboard to make the final decision.\n\nBest regards,\nEditorial Office",
+    "templateParams": {
+      "paperID": 3
+    }
+  },
+  {
+    "id": 1785228934668,
+    "timestamp": "2026-07-28T08:55:30.009Z",
+    "to": "chiefeditor@ist.com",
+    "subject": "[IST Journal] New Manuscript Assigned for Track Management",
+    "body": "Dear Chief Editor,\n\nWe have assigned a new manuscript to your track for evaluation and reviewer selection.\n\nPaper Details:\n- ID: 3\n- Title: \"Quantum Computing\"\n- Category: AI / Computer Science\n\nPlease log in to your Associate Editor Dashboard to perform the screening check and invite peer reviewers.\n\nBest regards,\nEditor-in-Chief",
+    "templateParams": {
+      "paperID": 3,
+      "role": "ASSOCIATE_EDITOR",
+      "name": "Chief Editor"
+    }
+  },
+  {
+    "id": 1785228771845,
+    "timestamp": "2026-07-28T08:52:47.223Z",
+    "to": "chiefeditor@ist.com",
+    "subject": "[IST Journal] New Manuscript Assigned for Review",
+    "body": "Dear Chief Editor,\n\nA new manuscript titled \"Quantum Computing\" has been submitted and assigned to you for editorial review.\n\nPaper ID: IST000000003\nAuthor(s): Adarsh, Mahesh\n\nPlease log in to your Editor Dashboard to review the submission and assign reviewers.\n\nBest regards,\nEditorial Office",
+    "templateParams": {
+      "paperID": 3
+    }
+  },
+  {
+    "id": 1785228771540,
+    "timestamp": "2026-07-28T08:52:47.213Z",
+    "to": "mattadarsh@gmail.com",
+    "subject": "[IST Journal] Manuscript Submitted Successfully",
+    "body": "Dear Adarsh, Mahesh,\n\nYour manuscript titled \"Quantum Computing\" has been successfully submitted and is awaiting editorial initial screening.\n\nPaper ID: IST000000003\nSubmission Date: 28/07/2026\n\nBest regards,\nEditorial Board",
+    "templateParams": {
+      "paperID": "IST000000003"
+    }
+  },
+  {
+    "id": 1785228771525,
+    "timestamp": "2026-07-28T08:52:45.222Z",
+    "to": "mithunkasan@gmail.com",
+    "subject": "[IST Journal] Manuscript Submitted Successfully",
+    "body": "Dear Mithun,\n\nYour manuscript titled \"Quantum Computing\" has been successfully submitted and is awaiting editorial initial screening.\n\nPaper ID: IST000000003\n\nBest regards,\nEditorial Board",
+    "templateParams": {
+      "paperID": 3
+    }
+  },
+  {
+    "id": 1785222969496,
+    "timestamp": "2026-07-28T07:16:04.511Z",
+    "to": "srpavithra3@gmail.com",
+    "subject": "[IST Journal] Manuscript Submitted Successfully",
+    "body": "Dear Pavithran,\n\nYour manuscript titled \"Double Edge Method\" has been successfully submitted and is awaiting editorial initial screening.\n\nPaper ID: IST000000002\nSubmission Date: 28/07/2026\n\nBest regards,\nEditorial Board",
+    "templateParams": {
+      "paperID": "IST000000002"
+    }
+  },
+  {
+    "id": 1785222968622,
+    "timestamp": "2026-07-28T07:16:03.591Z",
+    "to": "chiefeditor@ist.com",
+    "subject": "[IST Journal] New Manuscript Assigned for Review",
+    "body": "Dear Chief Editor,\n\nA new manuscript titled \"Double Edge Method\" has been submitted and assigned to you for editorial review.\n\nPaper ID: IST000000002\nAuthor(s): Pavithran\n\nPlease log in to your Editor Dashboard to review the submission and assign reviewers.\n\nBest regards,\nEditorial Office",
+    "templateParams": {
+      "paperID": 2
+    }
+  },
+  {
+    "id": 1785222968532,
+    "timestamp": "2026-07-28T07:16:03.385Z",
+    "to": "mithunkasan@gmail.com",
+    "subject": "[IST Journal] Manuscript Submitted Successfully",
+    "body": "Dear Mithun,\n\nYour manuscript titled \"Double Edge Method\" has been successfully submitted and is awaiting editorial initial screening.\n\nPaper ID: IST000000002\n\nBest regards,\nEditorial Board",
+    "templateParams": {
+      "paperID": 2
+    }
+  },
+  {
     "id": 1785169785747,
     "timestamp": "2026-07-27T16:29:40.187Z",
     "to": "mithunkasanmatt@gmail.com",

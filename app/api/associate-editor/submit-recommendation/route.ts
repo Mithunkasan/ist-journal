@@ -7,7 +7,7 @@ import { createNotificationAndEmail } from "@/lib/workflow";
 export async function POST(request: Request) {
   const session = await auth();
 
-  if (!session?.user?.id || (session.user.role !== "ASSOCIATE_EDITOR" && session.user.role !== "GUEST_EDITOR")) {
+  if (!session?.user?.id || (session.user.role !== "ASSOCIATE_EDITOR" && session.user.role !== "GUEST_EDITOR" && session.user.role !== "EDITOR")) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
 
@@ -27,8 +27,9 @@ export async function POST(request: Request) {
 
     const parsedPaperID = parseInt(paperID);
 
-    // Save AE Recommendation and synthesis comments in revisionComments
-    const aeSynthesis = `AE Recommendation: ${recommendation}\nJustification: ${comments}\nSubmitted by AE: ${session.user.name}`;
+    // Save AE/Editor Recommendation and synthesis comments in revisionComments
+    const roleLabel = session.user.role === "EDITOR" ? "Chief Editor" : session.user.role === "GUEST_EDITOR" ? "Guest Editor" : "Associate Editor";
+    const aeSynthesis = `${roleLabel} Recommendation/Feedback: ${recommendation}\nJustification: ${comments}\nSubmitted by ${roleLabel}: ${session.user.name}`;
 
     // Update SubmittedJournals
     await prisma.submittedJournals.updateMany({
@@ -48,7 +49,7 @@ export async function POST(request: Request) {
       }
     });
 
-    // Notify Editor-in-Chief that AE Recommendation is submitted!
+    // Notify Editor-in-Chief that AE/Editor Recommendation is submitted!
     const paper = await prisma.submittedJournals.findFirst({
       where: { paperID: parsedPaperID }
     });
@@ -60,8 +61,8 @@ export async function POST(request: Request) {
 
     for (const editor of editors) {
       if (editor.email) {
-        const forwardSubject = `AE Recommendation Submitted for Manuscript ID ${parsedPaperID}`;
-        const forwardBody = `Dear EIC ${editor.name},\n\nAssociate Editor ${session.user.name} has analyzed all peer review reports and submitted their synthesis recommendation for manuscript ID ${parsedPaperID} ("${paper?.title || "Scientific Paper"}").\n\nRecommendation: ${recommendation}\n\nEvaluation Details & Justification:\n------------------------------------------\nJustification / Synthesis Comments:\n${comments}\n------------------------------------------\n\nThe manuscript has been moved to "Awaiting Final Editor Decision" stage. Please log in to your Editor Dashboard to make the final decision.\n\nBest regards,\nEditorial Office`;
+        const forwardSubject = `${roleLabel} Recommendation/Feedback Submitted for Manuscript ID ${parsedPaperID}`;
+        const forwardBody = `Dear EIC ${editor.name},\n\n${roleLabel} ${session.user.name} has analyzed all peer review reports and submitted their synthesis recommendation/feedback for manuscript ID ${parsedPaperID} ("${paper?.title || "Scientific Paper"}").\n\nRecommendation: ${recommendation}\n\nEvaluation Details & Justification/Feedback:\n------------------------------------------\nFeedback / Synthesis Comments:\n${comments}\n------------------------------------------\n\nThe manuscript has been moved to "Awaiting Final Editor Decision" stage. Please log in to your Editor Dashboard to make the final decision.\n\nBest regards,\nEditorial Office`;
         await createNotificationAndEmail(
           editor.id,
           editor.email,

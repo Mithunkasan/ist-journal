@@ -23,6 +23,7 @@ const AssociateEditorDashboard = () => {
   const { t } = useLanguage();
   const [allSubmissions, setAllSubmissions] = useState([]);
   const [papers, setPapers] = useState([]);
+  const [screeningPapers, setScreeningPapers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [flag, setFlag] = useState(false);
 
@@ -36,12 +37,14 @@ const AssociateEditorDashboard = () => {
     if (showLoader) setLoading(true);
 
     try {
-      const [allSubmissionsRes, papersRes] = await Promise.all([
+      const [allSubmissionsRes, papersRes, screeningRes] = await Promise.all([
         axios.get("/api/editor/papers"),
-        axios.get("/api/associate-editor/papers")
+        axios.get("/api/associate-editor/papers"),
+        axios.get("/api/associate-editor/screening")
       ]);
       setAllSubmissions(allSubmissionsRes.data);
       setPapers(papersRes.data);
+      setScreeningPapers(screeningRes.data);
     } catch (error) {
       console.error("Error fetching papers:", error);
     } finally {
@@ -87,7 +90,7 @@ const AssociateEditorDashboard = () => {
 
       <Paper sx={{ p: 4, borderRadius: 4, boxShadow: '0 4px 20px rgba(0,0,0,0.05)', mb: 4 }}>
         <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>
-          All Submissions
+          Initial Screening Queue
         </Typography>
         
         {loading ? (
@@ -96,8 +99,8 @@ const AssociateEditorDashboard = () => {
           </Box>
         ) : (
           <JournalsTable 
-            journalsPaper={allSubmissions} 
-            titles="Associate_All_Submissions" 
+            journalsPaper={screeningPapers} 
+            titles="Associate_Screening" 
             setFlag={setFlag} 
             flag={flag} 
             loadingSlice={loading}
@@ -105,7 +108,7 @@ const AssociateEditorDashboard = () => {
         )}
       </Paper>
 
-      <Paper sx={{ p: 4, borderRadius: 4, boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+      <Paper sx={{ p: 4, borderRadius: 4, boxShadow: '0 4px 20px rgba(0,0,0,0.05)', mb: 4 }}>
         <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>
           {t("ae.mytrack")}
         </Typography>
@@ -118,6 +121,26 @@ const AssociateEditorDashboard = () => {
           <JournalsTable 
             journalsPaper={papers} 
             titles="AE_Track_Queue" 
+            setFlag={setFlag} 
+            flag={flag} 
+            loadingSlice={loading}
+          />
+        )}
+      </Paper>
+
+      <Paper sx={{ p: 4, borderRadius: 4, boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+        <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>
+          All Submissions
+        </Typography>
+        
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
+            <CircularProgress sx={{ color: '#004b23' }} />
+          </Box>
+        ) : (
+          <JournalsTable 
+            journalsPaper={allSubmissions} 
+            titles="Associate_All_Submissions" 
             setFlag={setFlag} 
             flag={flag} 
             loadingSlice={loading}

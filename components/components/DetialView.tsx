@@ -50,11 +50,44 @@ const DetialView = () => {
     FetchData();
   }, [dispatch, params.paperID]);
 
-  const docs = [
-    {
-      uri: file,
-    },
-  ];
+  const absoluteUrl = typeof window !== "undefined" && file && file.startsWith("/")
+    ? `${window.location.origin}${file}`
+    : file;
+
+  const [resolvedDocs, setResolvedDocs] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!absoluteUrl) {
+      setResolvedDocs([]);
+      return;
+    }
+
+    const hasExtension = /\.[a-zA-Z0-9]+$/.test(absoluteUrl.split('?')[0].split('/').pop() || "");
+    if (hasExtension) {
+      setResolvedDocs([{ uri: absoluteUrl }]);
+      return;
+    }
+
+    fetch(`${absoluteUrl}?info=true`)
+      .then((res) => res.json())
+      .then((meta) => {
+        let fileType = "";
+        const mime = meta.mimeType || "";
+        const filename = meta.filename || "";
+
+        if (mime.includes("pdf") || filename.endsWith(".pdf")) fileType = "pdf";
+        else if (mime.includes("wordprocessingml") || mime.includes("msword") || filename.endsWith(".docx") || filename.endsWith(".doc")) fileType = "docx";
+        else if (mime.includes("text/plain") || filename.endsWith(".txt")) fileType = "txt";
+        else if (mime.includes("image/png") || filename.endsWith(".png")) fileType = "png";
+        else if (mime.includes("image/jpeg") || filename.endsWith(".jpg") || filename.endsWith(".jpeg")) fileType = "jpg";
+
+        setResolvedDocs([{ uri: absoluteUrl, fileType, fileName: filename }]);
+      })
+      .catch((err) => {
+        console.error("Error fetching file metadata:", err);
+        setResolvedDocs([{ uri: absoluteUrl }]);
+      });
+  }, [absoluteUrl]);
 
   const handleBack = () => {
     router.back();
@@ -160,11 +193,15 @@ const DetialView = () => {
                       <div className="body p-5 flex justify-center">
                         <div className="paperUrl">
                           {file && (
-                            <DocViewer
-                              documents={docs}
-                              pluginRenderers={DocViewerRenderers}
-                              style={{ height: 1000, width: 900 }}
-                            />
+                            resolvedDocs.length > 0 ? (
+                              <DocViewer
+                                documents={resolvedDocs}
+                                pluginRenderers={DocViewerRenderers}
+                                style={{ height: 1000, width: 900 }}
+                              />
+                            ) : (
+                              <div style={{ textAlign: "center", padding: "20px" }}>Loading document viewer...</div>
+                            )
                           )}
                         </div>
                       </div>
